@@ -1,0 +1,12 @@
+import { SUBMISSION_LANGUAGE } from "@/types/problem";
+
+export const GLOBAL_CONSTANT = {
+    CODE_LANGUAGES: [
+        { value: typeof SUBMISSION_LANGUAGE.C, label: SUBMISSION_LANGUAGE.C},
+        { value: typeof SUBMISSION_LANGUAGE.CPP, label: SUBMISSION_LANGUAGE.CPP},
+        { value: typeof SUBMISSION_LANGUAGE.CSHARP, label: SUBMISSION_LANGUAGE.CSHARP},
+        { value: typeof SUBMISSION_LANGUAGE.JAVA, label: SUBMISSION_LANGUAGE.JAVA},
+        { value: typeof SUBMISSION_LANGUAGE.JAVASCRIPT, label: SUBMISSION_LANGUAGE.JAVASCRIPT},
+        { value: typeof SUBMISSION_LANGUAGE.PYTHON, label: SUBMISSION_LANGUAGE.PYTHON}
+    ],
+}
