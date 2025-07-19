@@ -3,7 +3,7 @@ import { apiClient } from "../api/api-client";
 import { API_CONFIG } from "../api/api-config";
 
 export const PostService = {
-  getPosts: async(): Promise<Post[]> {
+  getPosts: async(): Promise<Post[]> => {
     try {
       const response = await apiClient.get<Post[]>(
         `${API_CONFIG.API_END_POINT.POST}`,
@@ -17,7 +17,7 @@ export const PostService = {
       throw error
     }
   },
-  getPostById: async(id: string): Promise<Post> {
+  getPostById: async(id: string): Promise<Post> => {
     try {
       const response = await apiClient.get<Post>(
         `${API_CONFIG.API_END_POINT.POST}/${id}`,

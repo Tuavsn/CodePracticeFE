@@ -17,14 +17,14 @@ interface ProblemCardProps {
 
 export default function ProblemCard({
 	problem,
-	onlike
+	onLike
 }: ProblemCardProps) {
 	const {
 		getDifficultyColor
 	} = useProblem();
 
 	return (
-		<Card className="h-full hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group cursor-pointer overflow-hidden rounded-sm shadow-2xl border-0 bg-white dark:bg-gray-900">
+		<Card className="gap-1 h-full hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group cursor-pointer overflow-hidden rounded-sm shadow-2xl border-0 bg-white dark:bg-gray-900">
 			{/* Header */}
 			<CardHeader className="pb-3">
 				<div className="flex items-center justify-between">
@@ -35,7 +35,7 @@ export default function ProblemCard({
 					</div>
 				</div>
 			</CardHeader>
-			
+
 			{/* Content */}
 			<CardContent className="pt-0 flex flex-col h-full">
 				{/* Problem title and description */}
@@ -47,7 +47,7 @@ export default function ProblemCard({
 						{problem.description}
 					</p>
 				</Link>
-				
+
 				{/* Tags */}
 				<div className="flex flex-wrap items-center gap-1.5 mb-4">
 					{problem.tags.slice(0, 2).map((tag) => (
@@ -61,7 +61,7 @@ export default function ProblemCard({
 						</Badge>
 					)}
 				</div>
-				
+
 				{/* Stats */}
 				<div className="grid grid-cols-2 gap-3 mb-4 text-sm">
 					<div className="flex items-center text-muted-foreground">
@@ -73,45 +73,31 @@ export default function ProblemCard({
 						<span className="font-medium">{problem.acceptanceRate}%</span>
 					</div>
 				</div>
-				
+
 				{/* Author */}
 				<div className="flex items-center justify-between mb-4">
 					<div className="flex items-center space-x-2">
-						<Avatar className="rounded-lg h-6 w-6 overflow-hidden">
-							<AvatarImage 
-								src={problem.author.avatar || "/placeholder.svg"} 
-								alt={problem.author.username}
-								className="h-full w-full object-cover"
-							/>
-							<AvatarFallback className="text-xs bg-gray-100 dark:bg-gray-800 h-full w-full flex items-center justify-center">
-								{problem.author.username[0].toUpperCase()}
-							</AvatarFallback>
-						</Avatar>
-						<span className="text-sm text-muted-foreground font-medium">
-							{problem.author.username}
-						</span>
-						<span className="text-xs text-muted-foreground">•</span>
 						<span className="text-xs text-muted-foreground">
-							{formatDate(problem.createdAt as string)}
+							Published Time: {formatDate(problem.createdAt as string)}
 						</span>
 					</div>
 				</div>
-				
+
 				{/* Action buttons - pushed to bottom */}
 				<div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800 mt-auto">
 					<div className="flex items-center space-x-2">
-						<Button 
-							variant="ghost" 
-							size="sm" 
+						<Button
+							variant="ghost"
+							size="sm"
 							className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-2"
 						>
 							<Heart className="h-4 w-4 mr-1 fill-current" />
 							<span className="text-xs">0</span>
 						</Button>
 
-						<Button 
-							variant="ghost" 
-							size="sm" 
+						<Button
+							variant="ghost"
+							size="sm"
 							asChild
 							className="text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 px-2"
 						>
@@ -122,8 +108,8 @@ export default function ProblemCard({
 						</Button>
 					</div>
 
-					<Button 
-						size="sm" 
+					<Button
+						size="sm"
 						asChild
 						className="bg-primary hover:bg-primary/90 text-white px-3 py-1.5 text-sm"
 					>

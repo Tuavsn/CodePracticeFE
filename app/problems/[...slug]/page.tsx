@@ -68,148 +68,158 @@ export default function ProblemDetailPage() {
       {renderBackButton()}
       {/* Breadcrumb */}
       {renderBreadCrumb()}
-      
-      {/* Content - Single Column Layout */}
+
+      {/* Content - Grid Layout */}
       <div className="space-y-6">
-        {/* Problem Stats - Moved to top */}
-        <Card className="rounded-md shadow-lg">
-          <CardHeader>
-            <CardTitle>Problem Stats</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-sm font-semibold text-muted-foreground">Solved</div>
-              <div className="text-2xl font-bold text-blue-400">2,847,392</div>
-            </div>
-            <div className="text-center">
-              <div className="text-sm font-semibold text-muted-foreground">Acceptance Rate</div>
-              <div className="text-2xl font-bold text-red-400">49.1%</div>
-            </div>
-            <div className="text-center">
-              <div className="text-sm font-semibold text-muted-foreground mt-1">Difficulty</div>
-              <Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
-            </div>
-            <div className="text-center">
-              <div className="text-sm font-semibold text-muted-foreground mb-1">Vote</div>
-              <div className="flex justify-center items-center gap-3">
-                <div className="flex items-center gap-1">
-                  <ThumbsUp className="h-5 w-5 text-green-600" />
-                  <span className="text-sm">45,231</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <ThumbsDown className="h-5 w-5 text-red-600" />
-                  <span className="text-sm">1,432</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Problem Content */}
-        <Card className="rounded-md shadow-xl">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-2xl mb-2">
-                  {problemId}. {problem.title}
-                </CardTitle>
-                <div className="flex items-center gap-3 mb-4">
-                  <Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
-                  {/* <span className="text-sm text-muted-foreground">Acceptance: {problem.acceptance}</span> */}
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Share className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
-                <Link href={`/problems/solve/${stringToSlug(problem.title)}?id=${problemId}`}>
-                  <Button className="cursor-pointer">
-                    <Play className="h-4 w-4 mr-1" />
-                    Solve
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Problem Description */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Problem Description</h3>
-              <div className="prose prose-sm max-w-none">
-                <p className="whitespace-pre-line text-muted-foreground">{problem.description}</p>
-              </div>
-            </div>
-
-            {/* Examples */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Examples</h3>
-              <div className="space-y-4">
-                {problem.examples.map((example, index) => (
-                  <div key={index} className="bg-muted p-4 rounded-lg">
-                    <h4 className="font-medium mb-2">Example {index + 1}:</h4>
-                    <div className="space-y-2 text-sm">
-                      <div>
-                        <strong>Input:</strong>{" "}
-                        <code className="bg-background px-2 py-1 rounded">{example.input}</code>
-                      </div>
-                      <div>
-                        <strong>Output:</strong>{" "}
-                        <code className="bg-background px-2 py-1 rounded">{example.output}</code>
-                      </div>
-                      <div>
-                        <strong>Explanation:</strong> {example.explanation}
-                      </div>
+        {/* Problem Content and Stats Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Problem Content - Takes 3 columns */}
+          <div className="lg:col-span-3">
+            <Card className="rounded-md shadow-xl">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-2xl mb-2">
+                      {problemId}. {problem.title}
+                    </CardTitle>
+                    <div className="flex items-center gap-3 mb-4">
+                      <Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
+                      {/* <span className="text-sm text-muted-foreground">Acceptance: {problem.acceptance}</span> */}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Share className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                    <Link href={`/problems/solve/${stringToSlug(problem.title)}?id=${problemId}`}>
+                      <Button className="cursor-pointer">
+                        <Play className="h-4 w-4 mr-1" />
+                        Solve
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Problem Description */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Problem Description</h3>
+                  <div className="prose prose-sm max-w-none">
+                    <p className="whitespace-pre-line text-muted-foreground">{problem.description}</p>
+                  </div>
+                </div>
 
-            {/* Constraints */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Constraints</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                {problem.constraints.map((constraint, index) => (
-                  <li key={index}>{constraint}</li>
-                ))}
-              </ul>
-            </div>
+                {/* Examples */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Examples</h3>
+                  <div className="space-y-4">
+                    {problem.examples?.map((example, index) => (
+                      <div key={index} className="bg-muted p-4 rounded-lg">
+                        <h4 className="font-medium mb-2">Example {index + 1}:</h4>
+                        <div className="space-y-2 text-sm">
+                          <div>
+                            <strong>Input:</strong>{" "}
+                            <code className="bg-background px-2 py-1 rounded">{example.input}</code>
+                          </div>
+                          <div>
+                            <strong>Output:</strong>{" "}
+                            <code className="bg-background px-2 py-1 rounded">{example.output}</code>
+                          </div>
+                          <div>
+                            <strong>Explanation:</strong> {example.explanation}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Tags */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {problem.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary">
-                    {tag}
+                {/* Constraints */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Constraints</h3>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                    {problem.constraints?.map((constraint, index) => (
+                      <li key={index}>{constraint}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Tags</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {problem.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Sidebar - Takes 1 column */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Problem Stats */}
+            <Card className="gap-1 rounded-md shadow-lg h-fit">
+              <CardHeader>
+                <CardTitle className="text-base text-center">Problem Stats</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Solved</div>
+                  <div className="text-lg font-bold text-blue-400">2.8M</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Acceptance</div>
+                  <div className="text-lg font-bold text-red-400">49.1%</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground mb-1">Difficulty</div>
+                  <Badge className={getDifficultyColor(problem.difficulty)} variant="outline">
+                    {problem.difficulty}
                   </Badge>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground mb-1">Rating</div>
+                  <div className="flex justify-center items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <ThumbsUp className="h-4 w-4 text-green-600" />
+                      <span className="text-xs">45K</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ThumbsDown className="h-4 w-4 text-red-600" />
+                      <span className="text-xs">1.4K</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Related Problems - Moved to bottom */}
-        <Card className="rounded-lg shadow-2xl">
-          <CardHeader>
-            <CardTitle>Related Problems</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Link href="/problems/2" className="block p-3 rounded-lg hover:bg-muted transition-colors border border-border">
-              <div className="font-medium">Add Two Numbers</div>
-              <div className="text-sm text-muted-foreground">Medium</div>
-            </Link>
-            <Link href="/problems/3" className="block p-3 rounded-lg hover:bg-muted transition-colors border border-border">
-              <div className="font-medium">Longest Substring</div>
-              <div className="text-sm text-muted-foreground">Medium</div>
-            </Link>
-            <Link href="/problems/4" className="block p-3 rounded-lg hover:bg-muted transition-colors border border-border">
-              <div className="font-medium">Median of Arrays</div>
-              <div className="text-sm text-muted-foreground">Hard</div>
-            </Link>
-          </CardContent>
-        </Card>
+            {/* Related Problems - Now below stats */}
+            <Card className="rounded-lg shadow-2xl">
+              <CardHeader>
+                <CardTitle>Related Problems</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Link href="/problems/2" className="block p-3 rounded-lg hover:bg-muted transition-colors border border-border">
+                  <div className="text-sm font-semibold">Add Two Numbers</div>
+                  <div className="text-sm text-muted-foreground">Medium</div>
+                </Link>
+                <Link href="/problems/3" className="block p-3 rounded-lg hover:bg-muted transition-colors border border-border">
+                  <div className="text-sm font-semibold">Longest Substring</div>
+                  <div className="text-sm text-muted-foreground">Medium</div>
+                </Link>
+                <Link href="/problems/4" className="block p-3 rounded-lg hover:bg-muted transition-colors border border-border">
+                  <div className="text-sm font-semibold">Median of Arrays</div>
+                  <div className="text-sm text-muted-foreground">Hard</div>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </ContainerLayout>
   )

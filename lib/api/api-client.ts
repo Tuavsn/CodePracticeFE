@@ -1,4 +1,4 @@
-import { ResponseValidationError } from "../error-handling";
+import { ApiError, NetworkError, ResponseValidationError, TimeoutError } from "../error-handling";
 import { API_CONFIG } from "./api-config";
 
 // Request options
@@ -171,7 +171,7 @@ class ApiClient {
           if (response.status === 422) {
             throw new BusinessError(errorMsg);
           } else if (response.status === 400) {
-            throw new ValidationError(errorMsg, errors);
+            throw new ResponseValidationError(errorMsg, errors);
           } else {
             throw new ApiError(errorMsg, response.status, response.statusText, null, errors);
           }
@@ -245,7 +245,7 @@ class ApiClient {
           throw error;
         }
 
-        if (error instanceof ValidationError || error instanceof BusinessError) {
+        if (error instanceof ResponseValidationError || error instanceof BusinessError) {
           throw error;
         }
 

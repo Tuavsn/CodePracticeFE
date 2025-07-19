@@ -4,15 +4,15 @@ import dynamic from "next/dynamic"
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false })
 
 interface EditorProps {
-	onEditorChange: () => void;
-	onEditorMount: () => void;
+	onEditorChange: (code: string | undefined) => void;
+	onEditorMount: (editor: any) => void;
 	theme: 'vs-light' | 'vs-dark';
-	code: string;
-	selectedLanguage: string;
+	code: string | undefined;
+	language: string;
 }
 
 export default function Editor({
-	selectedLanguage,
+	language,
 	code,
 	theme,
 	onEditorChange,
@@ -21,20 +21,24 @@ export default function Editor({
 	return (
 		<MonacoEditor
 			height="100%"
-			language={selectedLanguage}
+			language={language}
 			value={code}
 			onChange={onEditorChange}
 			onMount={onEditorMount}
 			theme={theme}
 			options={{
-				minimap: { enabled: false },
-				fontSize: 14,
+				minimap: { enabled: true },
+				fontSize: 16,
 				lineNumbers: "on",
 				roundedSelection: false,
 				scrollBeyondLastLine: false,
 				automaticLayout: true,
 				tabSize: 2,
 				wordWrap: "on",
+				padding: {
+					top: 12,
+					bottom: 12,
+				},
 			}}
 		/>
 	)

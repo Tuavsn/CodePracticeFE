@@ -1,4 +1,4 @@
-import { SUBMISSION_LANGUAGE } from "@/types/problem";
+import { DEFAULT_CODE_BASE, SubmissionLanguage } from "@/types/problem";
 import { useRef, useState } from "react";
 
 export const ACTIVE_TAB = {
@@ -8,15 +8,17 @@ export const ACTIVE_TAB = {
 
 export function useEditor() {
     const editorRef = useRef<any>(null);
-    const [selectedLanguage, setSelectedLanguage] = useState<typeof SUBMISSION_LANGUAGE[keyof typeof SUBMISSION_LANGUAGE]>(SUBMISSION_LANGUAGE.CPP);
-    const [code, setCode] = useState('');
+    const [language, setLanguage] = useState<SubmissionLanguage>("cpp");
+    const [code, setCode] = useState<string | undefined>(DEFAULT_CODE_BASE[language]);
+    const [theme, setTheme] = useState<'vs-light' | 'vs-dark'>('vs-light')
     const [isRunning, setIsRunning] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [testResults, setTestResults] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<typeof ACTIVE_TAB[keyof typeof ACTIVE_TAB]>(ACTIVE_TAB.PROBLEM);
 
-    const handleLanguageChange = (language: typeof SUBMISSION_LANGUAGE[keyof typeof SUBMISSION_LANGUAGE]) => {
-        setSelectedLanguage(language)
+    const handleLanguageChange = (language: SubmissionLanguage) => {
+        setLanguage(language);
+        setCode(DEFAULT_CODE_BASE[language]);
     }
 
     const handleEditorDidMount = (editor: any) => {
@@ -77,25 +79,47 @@ export function useEditor() {
         setIsSubmitting(false)
     }
 
+    const handleDownloading = () => {
+        const languageExtensions: Record<SubmissionLanguage, string> = {
+            c: "c",
+            cpp: "cpp",
+            python: "py",
+            java: "java",
+            javascript: "js",
+            csharp: "cs",
+        };
+
+        const ext = languageExtensions[language] || "txt";
+        const blob = new Blob([code ?? ""], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `my_code.${ext}`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    const handleToggleTheme = () => {
+        setTheme(theme === 'vs-light' ? 'vs-dark' : 'vs-light');
+    }
+
     const handleReset = () => {
-        setCode('');
+        setCode(DEFAULT_CODE_BASE[language]);
         setTestResults([]);
     }
 
-    // const getDifficultyColor = (difficulty: string) => {
-    //     switch 
-    // }
-
     return {
         editorRef,
-        selectedLanguage, setSelectedLanguage,
+        language, setLanguage,
         code, setCode,
+        theme, handleToggleTheme,
         isRunning, isSubmitting,
-        testResults, activeTab,
+        testResults, activeTab, setActiveTab,
         handleEditorDidMount,
         handleLanguageChange,
         handleRunCode,
         handleSubmit,
+        handleDownloading,
         handleReset
     }
 }

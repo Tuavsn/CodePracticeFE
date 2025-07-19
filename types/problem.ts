@@ -1,3 +1,4 @@
+import { keyof } from "zod/v4";
 import { BaseObject } from "./global";
 import { User } from "./user";
 
@@ -22,7 +23,7 @@ export interface Problem extends BaseObject {
 
 export interface ProblemExample {
   input: string;
-  ouput: string;
+  output: string;
   explanation?: string;
 }
 
@@ -53,13 +54,61 @@ export const PROBLEM_STATUS = {
 }
 
 export const SUBMISSION_LANGUAGE = {
-  C: 'C',
-  CPP: 'C++',
-  PYTHON: 'Python',
-  JAVA: 'Java',
-  JAVASCRIPT: 'Javascript',
-  CSHARP: 'C#'
+  c: 'C',
+  cpp: 'C++',
+  python: 'Python',
+  java: 'Java',
+  javascript: 'Javascript',
+  csharp: 'C#'
 }
+
+export const DEFAULT_CODE_BASE: Record<SubmissionLanguage, string> = {
+  c: `#include <stdio.h>
+
+int main() {
+    printf("Hello, World!");
+    return 0;
+}
+`,
+  cpp: `#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hello, World!" << endl;
+    return 0;
+}
+`,
+  python: `def main():
+    print("Hello, World!")
+
+if __name__ == "__main__":
+    main()
+`,
+  java: `public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}
+`,
+  javascript: `function main() {
+    console.log("Hello, World!");
+}
+
+main();
+`,
+  csharp: `using System;
+
+class Program {
+    static void Main() {
+        Console.WriteLine("Hello, World!");
+    }
+}
+`
+};
+
+export type SubmissionLanguage = keyof typeof SUBMISSION_LANGUAGE
+
+export type SubmissionLanguageValue = (typeof SUBMISSION_LANGUAGE)[keyof typeof SUBMISSION_LANGUAGE];
 
 export const PROBLEM_RESULT = {
   ACCEPT: "Accepted",

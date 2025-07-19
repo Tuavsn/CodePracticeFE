@@ -1,12 +1,9 @@
 'use client'
-
-import Header from "@/components/header";
 import PostCard from "@/components/posts/post-card";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import SmallerMainLogo from "@/components/main-logo-smaller";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/lib/date-utils";
 import { mockPosts } from "@/lib/mock-data/mock-post";

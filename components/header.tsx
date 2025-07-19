@@ -1,18 +1,11 @@
-"use client"
-
-import Image from "next/image"
 import Link from "next/link"
-import Logo from "@/assets/images/logo.png";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Bell, Moon, Shield, Sun, User } from "lucide-react";
-import { useState } from "react";
+import { Bell, User } from "lucide-react";
 import { useTheme } from "next-themes";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 export default function Header() {
-  const { setTheme } = useTheme();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const { setTheme } = useTheme();
 
   return (
     <header className="fixed top-0 z-50 w-full bg-transparent">

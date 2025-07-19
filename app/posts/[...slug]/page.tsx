@@ -1,12 +1,10 @@
 'use client'
-
 import CommentList from "@/components/comments/comment-list";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import SmallerMainLogo from "@/components/main-logo-smaller";
 import { formatDate } from "@/lib/date-utils";
 import { mockPosts } from "@/lib/mock-data/mock-post";
 import { Post } from "@/types/post";

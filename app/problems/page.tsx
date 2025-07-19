@@ -1,8 +1,5 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import SmallerMainLogo from "@/components/main-logo-smaller";
-import { MessageCircle, MessageSquare, TrendingUp, Trophy, Users } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { CheckCircle, Circle, Clock, FileText } from "lucide-react";
 import CTAButtons, { CTAButtonsType } from "@/components/cta-buttons";
 import ContainerLayout from "@/components/layout/container-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,46 +35,88 @@ export default function ProblemPage() {
 
   const renderStats = () => {
     return (
-      <div className="grid grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-6 gap-4 mb-8">
         <Card className="gap-1 bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transform hover:scale-102 transition-all duration-200 rounded-lg">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-1">
             <CardTitle className="flex justify-center">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <Users className="h-5 w-5 text-green-400" />
+              <div className="p-1 bg-gray-100 rounded-lg">
+                <FileText className="h-5 w-5 text-blue-500" />
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center pt-0">
-            <div className="text-2xl font-bold text-blue-400">12,340</div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider">Active Users</div>
+            <div className="text-xl font-bold text-blue-400">1,247</div>
+            <div className="text-xs font-semibold text-gray-500 tracking-wider">Problems</div>
           </CardContent>
         </Card>
 
         <Card className="gap-1 bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transform hover:scale-102 transition-all duration-200 rounded-lg">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-1">
             <CardTitle className="flex justify-center">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <MessageSquare className="h-5 w-5 text-blue-400" />
+              <div className="p-1 bg-gray-100 rounded-lg">
+                <CheckCircle className="h-5 w-5 text-green-500" />
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center pt-0">
-            <div className="text-2xl font-bold text-blue-400">56,789</div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider">Posts</div>
+            <div className="text-xl font-bold text-blue-400">834</div>
+            <div className="text-xs font-semibold text-gray-500 tracking-wider">Solved</div>
           </CardContent>
         </Card>
 
         <Card className="gap-1 bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transform hover:scale-102 transition-all duration-200 rounded-lg">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-1">
             <CardTitle className="flex justify-center">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-orange-400" />
+              <div className="p-1 bg-gray-100 rounded-lg">
+                <Clock className="h-5 w-5 text-orange-500" />
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center pt-0">
-            <div className="text-2xl font-bold text-blue-400">1,892</div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider">Daily</div>
+            <div className="text-xl font-bold text-blue-400">413</div>
+            <div className="text-xs font-semibold text-gray-500 tracking-wider">Pending</div>
+          </CardContent>
+        </Card>
+
+        <Card className="gap-1 bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transform hover:scale-102 transition-all duration-200 rounded-lg">
+          <CardHeader className="pb-1">
+            <CardTitle className="flex justify-center">
+              <div className="p-1 bg-green-100 rounded-lg">
+                <Circle className="h-5 w-5 text-green-600" />
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center pt-0">
+            <div className="text-xl font-bold text-green-600">456</div>
+            <div className="text-xs font-semibold text-gray-500 tracking-wider">Easy</div>
+          </CardContent>
+        </Card>
+
+        <Card className="gap-1 bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transform hover:scale-102 transition-all duration-200 rounded-lg">
+          <CardHeader className="pb-1">
+            <CardTitle className="flex justify-center">
+              <div className="p-1 bg-yellow-100 rounded-lg">
+                <Circle className="h-5 w-5 text-yellow-600" />
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center pt-0">
+            <div className="text-xl font-bold text-yellow-600">567</div>
+            <div className="text-xs font-semibold text-gray-500 tracking-wider">Medium</div>
+          </CardContent>
+        </Card>
+
+        <Card className="gap-1 bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transform hover:scale-102 transition-all duration-200 rounded-lg">
+          <CardHeader className="pb-1">
+            <CardTitle className="flex justify-center">
+              <div className="p-1 bg-red-100 rounded-lg">
+                <Circle className="h-5 w-5 text-red-600" />
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center pt-0">
+            <div className="text-xl font-bold text-red-600">224</div>
+            <div className="text-xs font-semibold text-gray-500 tracking-wider">Hard</div>
           </CardContent>
         </Card>
       </div>
