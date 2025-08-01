@@ -2,33 +2,37 @@ import { BaseObject } from "./global";
 import { User } from "./user";
 
 export interface Post extends BaseObject {
-  user: User;
+  author: User;
   title: string;
+  thumbnail: string;
   content: string;
-  status: (keyof typeof POST_STATUS);
-  postImages: {
-    imageURL: string
+  topics: string[];
+  images: {
+    url: string,
+    order: number
   }[];
   postComments: PostComment[];
   postReactions: PostReaction[];
-  tags: {
-    title: string;
-  }[]
+  status: (keyof typeof POST_STATUS);
 }
 
+export type CreatePostRequest = Pick<Post, 'title' | 'thumbnail' | 'content' | 'topics' | 'images'>;
+
+export type UpdatePostRequest = Partial<CreatePostRequest>;
+
 export interface PostReaction extends BaseObject {
-  user: User;
+  author: User;
   reaction: (keyof typeof POST_REACTION);
 }
 
 export interface PostComment extends BaseObject {
-  user: User;
+  author: User;
   content: string;
   commentReactions: CommentReaction[];
 }
 
 export interface CommentReaction extends BaseObject {
-  user: User;
+  author: User;
   reaction: (keyof typeof COMMENT_REACTION);
 }
 

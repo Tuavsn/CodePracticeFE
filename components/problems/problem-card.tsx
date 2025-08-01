@@ -3,12 +3,11 @@ import { Problem } from "@/types/problem";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Badge } from "../ui/badge";
 import Link from "next/link";
-import { useProblem } from "@/hooks/use-problem";
 import { Clock, Heart, MessageCircle, TrendingUp, Users } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { formatDate } from "@/lib/date-utils";
 import { Button } from "../ui/button";
 import { stringToSlug } from "@/lib/string-utils";
+import { getDifficultyColor } from "@/lib/utils";
 
 interface ProblemCardProps {
 	problem: Problem;
@@ -19,9 +18,6 @@ export default function ProblemCard({
 	problem,
 	onLike
 }: ProblemCardProps) {
-	const {
-		getDifficultyColor
-	} = useProblem();
 
 	return (
 		<Card className="gap-1 h-full hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group cursor-pointer overflow-hidden rounded-sm shadow-2xl border-0 bg-white dark:bg-gray-900">
@@ -39,7 +35,7 @@ export default function ProblemCard({
 			{/* Content */}
 			<CardContent className="pt-0 flex flex-col h-full">
 				{/* Problem title and description */}
-				<Link href={`/problems/${stringToSlug(problem.title)}?id=${problem.id}`} className="block mb-4">
+				<Link href={`/problems/${stringToSlug(problem.title)}-${problem.id}`} className="block mb-4">
 					<h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors line-clamp-2 leading-tight">
 						{problem.title}
 					</h3>
@@ -66,7 +62,7 @@ export default function ProblemCard({
 				<div className="grid grid-cols-2 gap-3 mb-4 text-sm">
 					<div className="flex items-center text-muted-foreground">
 						<Users className="h-4 w-4 mr-1.5 text-blue-500" />
-						<span className="font-medium">{problem.submissionCount.toLocaleString()}</span>
+						<span className="font-medium">{problem.submissionCount?.toLocaleString()}</span>
 					</div>
 					<div className="flex items-center text-muted-foreground">
 						<TrendingUp className="h-4 w-4 mr-1.5 text-green-500" />
@@ -92,7 +88,7 @@ export default function ProblemCard({
 							className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-2"
 						>
 							<Heart className="h-4 w-4 mr-1 fill-current" />
-							<span className="text-xs">0</span>
+							<span className="text-xs">{problem.reactionCount}</span>
 						</Button>
 
 						<Button

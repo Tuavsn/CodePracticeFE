@@ -20,8 +20,8 @@ export default function CommentCard({ comment, onLike, onReply }: CommentCardPro
       <div className="flex space-x-3">
         {/* Avatar */}
         <Avatar className="rounded-lg h-12 w-12">
-          <AvatarImage src={comment.user.avatar || '/placeholder.svg'} alt={comment.user.username} />
-          <AvatarFallback>{comment.user.email}</AvatarFallback>
+          <AvatarImage src={comment.author.avatar || '/placeholder.svg'} alt={comment.author.username} />
+          <AvatarFallback>{comment.author.email}</AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-2">
           {/* Header */}
@@ -30,8 +30,8 @@ export default function CommentCard({ comment, onLike, onReply }: CommentCardPro
             <div className="space-x-2">
               <Link
                 className="font-semibold hover:underline hover:text-[#0476D0]"
-                href={`/profile/${comment.user.id}`}>
-                {comment.user.username}
+                href={`/profile/${comment.author.id}`}>
+                {comment.author.username}
               </Link>
               <div className="text-sm text-muted-foreground">
                 {formatDate(comment.createdAt as string)}
@@ -62,8 +62,7 @@ export default function CommentCard({ comment, onLike, onReply }: CommentCardPro
               className={`h-6 text-xs`}
             >
               <Heart className="h-3 w-3" />
-              0
-              {/* {comment.commentReactions.length > 0 && comment.commentReactions.length} */}
+              {comment.commentReactions ? comment.commentReactions.length : 0}
             </Button>
             <Button
               variant={"ghost"}

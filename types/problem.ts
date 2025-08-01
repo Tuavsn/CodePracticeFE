@@ -1,5 +1,4 @@
-import { keyof } from "zod/v4";
-import { BaseObject } from "./global";
+import { BaseObject, SubmissionLanguage, SubmissionLanguageValue } from "./global";
 import { User } from "./user";
 
 export interface Problem extends BaseObject {
@@ -8,23 +7,49 @@ export interface Problem extends BaseObject {
   difficulty: (keyof typeof PROBLEM_COMPLEXITY);
   tags: string[];
   author: User;
-  likeCount: number;
+  reactionCount: number;
   commentCount: number;
   submissionCount: number;
   acceptanceRate: number;
   isLiked?: boolean;
   isSolved?: boolean;
-  constraints?: string[];
-  examples?: ProblemExample[];
-  hints?: string[];
+  constraints: string[];
+  examples: ProblemExample[];
+  codeTemplates: ProblemCodeTemplate[];
+  hints: string[];
   status?: (keyof typeof PROBLEM_STATUS);
   isSelected?: boolean;
+}
+
+export type CreateProblemRequest = Pick<Problem, 'title' | 'description' | 'difficulty' | 'tags' | 'constraints' | 'examples' | 'codeTemplates' | 'hints'>;
+
+export type UpdateProblemRequest = Partial<CreateProblemRequest>;
+
+export interface ProblemComment extends BaseObject {
+  author: User;
+  content: string;
+  commentReactions: CommentReaction[];
+}
+
+export interface CommentReaction extends BaseObject {
+  author: User;
+  reaction: (keyof typeof COMMENT_REACTION);
+}
+
+export const COMMENT_REACTION = {
+  LIKE: 'Like',
+  DISLIKE: 'Dislike'
 }
 
 export interface ProblemExample {
   input: string;
   output: string;
   explanation?: string;
+}
+
+export interface ProblemCodeTemplate {
+  language: SubmissionLanguageValue;
+  code: string;
 }
 
 // export interface ProblemSubmission extends BaseObject {
@@ -53,24 +78,15 @@ export const PROBLEM_STATUS = {
   DELETED: 'Deleted'
 }
 
-export const SUBMISSION_LANGUAGE = {
-  c: 'C',
-  cpp: 'C++',
-  python: 'Python',
-  java: 'Java',
-  javascript: 'Javascript',
-  csharp: 'C#'
-}
-
 export const DEFAULT_CODE_BASE: Record<SubmissionLanguage, string> = {
-  c: `#include <stdio.h>
+  C: `#include <stdio.h>
 
 int main() {
     printf("Hello, World!");
     return 0;
 }
 `,
-  cpp: `#include <iostream>
+  CPP: `#include <iostream>
 using namespace std;
 
 int main() {
@@ -78,25 +94,25 @@ int main() {
     return 0;
 }
 `,
-  python: `def main():
+  PYTHON: `def main():
     print("Hello, World!")
 
 if __name__ == "__main__":
     main()
 `,
-  java: `public class Main {
+  JAVA: `public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
     }
 }
 `,
-  javascript: `function main() {
+  JAVASCRIPT: `function main() {
     console.log("Hello, World!");
 }
 
 main();
 `,
-  csharp: `using System;
+  CSHARP: `using System;
 
 class Program {
     static void Main() {
@@ -105,14 +121,3 @@ class Program {
 }
 `
 };
-
-export type SubmissionLanguage = keyof typeof SUBMISSION_LANGUAGE
-
-export type SubmissionLanguageValue = (typeof SUBMISSION_LANGUAGE)[keyof typeof SUBMISSION_LANGUAGE];
-
-export const PROBLEM_RESULT = {
-  ACCEPT: "Accepted",
-  WRONG_ANSWER: "Wrong answer",
-  TIME_LIMIT: 'Time limit',
-  STACK_OVERFLOW: 'Stack overflow'
-}

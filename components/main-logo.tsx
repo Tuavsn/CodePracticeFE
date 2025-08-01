@@ -20,7 +20,8 @@ export default function MainLogo() {
                 <div className="w-8 h-px bg-gray-300"></div>
               </div>
             </div>
-          </div></Link>
+          </div>
+        </Link>
       </div>
     </div>
   )

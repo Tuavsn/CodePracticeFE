@@ -1,12 +1,11 @@
 import { useAuthContext } from "@/contexts/auth-context"
-import { useEffect } from "react";
 
 export const useAuth = () => {
-  const store = useAuthContext();
+  const auth = useAuthContext();
 
-  useEffect(() => {
-    store.getInitialState();
-  }, [])
-
-  return store;
+  return {
+    ...auth,
+    isLoggedIn: auth.isAuthenticated,
+    userInfo: auth.user
+  }
 }

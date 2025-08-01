@@ -3,10 +3,6 @@ import { apiClient } from "../api/api-client";
 import { API_CONFIG } from "../api/api-config";
 import { Post, PostComment } from "@/types/post";
 
-export interface UserRequest {
-
-}
-
 export const UserService = {
   // getPersonalProfile: async(): Promise<User> {
   //   try {

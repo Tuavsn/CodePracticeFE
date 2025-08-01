@@ -9,7 +9,8 @@ import { Bookmark, Heart, MessageCircle, MoreHorizontal, Share } from "lucide-re
 import { getArchievementIcon, getRoleIcon } from "@/lib/icon-utils";
 import Image from "next/image";
 import { Badge } from "../ui/badge";
-import { useState } from "react";
+import { stringToSlug } from "@/lib/string-utils";
+import ContentDisplay from "../content-display";
 
 interface PostCardProps {
   post: Post;
@@ -18,8 +19,6 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, onLike, onBookMark }: PostCardProps) {
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(post.postReactions.length);
 
   return (
     <Card className="border-0 rounded-none shadow-none gap-1 hover:bg-gray-70/30 hover:shadow-sm transition-all duration-200 group cursor-pointer relative overflow-hidden">
@@ -28,19 +27,19 @@ export default function PostCard({ post, onLike, onBookMark }: PostCardProps) {
           <div className="flex items-center space-x-3">
             {/* Avatar */}
             <Avatar className="h-12 w-12 rounded-md">
-              <AvatarImage src={post.user.avatar || '/placeholder.svg'} alt={post.user.username} />
-              <AvatarFallback>{post.user.email}</AvatarFallback>
+              <AvatarImage src={post.author.avatar || '/placeholder.svg'} alt={post.author.username} />
+              <AvatarFallback>{post.author.email}</AvatarFallback>
             </Avatar>
             <div>
               <div className="flex items-center space-x-2 py-1">
                 {/* Username */}
-                <Link href={`/profile/${post.user.id}`} className="font-semibold hover:underline hover:text-[#0476D0]">
-                  {post.user.username}
+                <Link href={`/profile/${post.author.id}`} className="font-semibold hover:underline hover:text-[#0476D0]">
+                  {post.author.username}
                 </Link>
                 {/* User role */}
-                {getRoleIcon(post.user.role)}
+                {getRoleIcon(post.author.role)}
                 {/* User archievement */}
-                {getArchievementIcon(post.user.achievement)}
+                {getArchievementIcon(post.author.achievement)}
               </div>
               {/* Created Date */}
               <p className="text-sm text-muted-foreground">{formatDate(post.createdAt as string)}</p>
@@ -66,36 +65,36 @@ export default function PostCard({ post, onLike, onBookMark }: PostCardProps) {
       {/* Content */}
       <CardContent>
         {/* Post content with image layout */}
-        <div className={`${post.postImages ? 'md:flex md:gap-4' : ''}`}>
+        <div className={`${post.thumbnail ? 'md:flex md:gap-4' : ''}`}>
           {/* Text content */}
-          <div className={`${post.postImages ? "md:flex-1" : ""}`}>
+          <div className={`${post.thumbnail ? "md:flex-1" : ""}`}>
             {/* Post title */}
-            <Link href={`/posts/${post.id}`}>
+            <Link href={`/posts/${stringToSlug(post.title)}-${post.id}`}>
               <h2 className="text-xl font-semibold mb-2 hover:text-[#0476D0] cursor-pointer">{post.title}</h2>
             </Link>
             {/* Post content */}
-            <p className="text-muted-foreground line-clamp-3">{post.content}</p>
-            {/* Tags */}
+            <ContentDisplay className="text-muted-foreground line-clamp-4" content={post.content} />
+            {/* Topics */}
             <div className="flex flex-wrap gap-2 mt-2">
-              {post.tags.map((tag, index) => (
+              {post.topics.map((topic, index) => (
                 <Badge key={index} variant={"secondary"}>
-                  #{tag.title}
+                  #{topic}
                 </Badge>
               ))}
             </div>
           </div>
           {/* Image - show on top for mobile, right side for desktop */}
-          {post.postImages && (
-            <div className={`${post.postImages ? 'mt-3 md:mt-0 md:w-80 md:flex-shrink-0' : ''}`}>
+          {post.thumbnail && (
+            <div className={`${post.thumbnail ? 'mt-3 md:mt-0 md:w-80 md:flex-shrink-0' : ''}`}>
               <Link href={`/posts/${post.id}`}>
-                {typeof post.postImages[0].imageURL === 'string' && (
-                  <Image
-                    src={post.postImages[0].imageURL}
+                {typeof post.thumbnail === 'string' && (
+                <Image
+                    src={post.thumbnail}
                     alt={post.title}
                     width={0}
                     height={0}
                     sizes="100vw"
-                    className="w-full max-w-60 h-full max-h-60 mx-auto rounded-sm hover:opacity-90 transition-opacity cursor-pointer"
+                    className="w-full max-w-60 h-full max-h-60 mx-auto rounded-sm hover:opacity-90 transition-opacity cursor-pointer object-contain"
                   />
                 )}
               </Link>
@@ -112,12 +111,12 @@ export default function PostCard({ post, onLike, onBookMark }: PostCardProps) {
             {/* Like Button */}
             <Button className='cursor-pointer' variant={'ghost'}>
               <Heart className="h-4 w-4" />
-              {likeCount}
+              {post.postReactions ? post.postReactions.length : 0}
             </Button>
             {/* Comment Button */}
             <Button className='cursor-pointer' variant={'ghost'}>
               <MessageCircle className="h-4 w-4" />
-              {post.postComments.length}
+              {post.postComments ? post.postComments.length : 0}
             </Button>
             {/* Share Button */}
             <Button className='cursor-pointer' variant={'ghost'}>

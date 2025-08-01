@@ -1,48 +1,295 @@
 'use client'
 import FullscreenLayout from "@/components/layout/fullscreen-layout";
+import LoadingOverlay from "@/components/loading";
 import CodeControl from "@/components/problems/code-control";
 import Editor from "@/components/problems/monaco-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useEditor } from "@/hooks/use-editor";
-import { useProblem } from "@/hooks/use-problem";
-import { mockProblems } from "@/lib/mock-data/mock-problem";
-import { Problem } from "@/types/problem";
-import { ArrowLeft, CheckCircle, Clock, XCircle } from "lucide-react";
+import { useEditor } from "@/hooks/use-submission";
+import { formatDate } from "@/lib/date-utils";
+import { getDifficultyColor } from "@/lib/utils";
+import { Result, Submission } from "@/types/submission";
+import { ArrowLeft, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, Trophy, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
+// Submission Item Component - Di chuyển ra ngoài component chính
+interface SubmissionItemProps {
+	submission: Submission;
+	index: number;
+	themeClasses: any;
+	onFetchResults: (submissionId: string) => Promise<void>;
+	results: Result[];
+	loadingSubmissionIds: Set<string>;
+}
+
+function SubmissionItem({
+	submission,
+	index,
+	themeClasses,
+	onFetchResults,
+	results,
+	loadingSubmissionIds
+}: SubmissionItemProps) {
+	const [isExpanded, setIsExpanded] = useState(false);
+	const [hasLoadedResults, setHasLoadedResults] = useState(false);
+
+	const isLoading = loadingSubmissionIds.has(submission.id)
+
+	const getStatusIcon = () => {
+		switch (submission.result) {
+			case "ACCEPTED":
+				return <CheckCircle className="h-4 w-4 text-green-500" />;
+			case "WRONG_ANSWER":
+				return <XCircle className="h-4 w-4 text-red-500" />;
+			case "TIME_LIMIT":
+				return <Clock className="h-4 w-4 text-yellow-500" />;
+			case "STACK_OVERFLOW":
+				return <AlertCircle className="h-4 w-4 text-orange-500" />;
+			default:
+				return <Clock className="h-4 w-4 text-gray-500" />;
+		}
+	};
+
+	const getStatusText = () => {
+		switch (submission.result) {
+			case "ACCEPTED":
+				return "Accepted";
+			case "WRONG_ANSWER":
+				return "Wrong Answer";
+			case "STACK_OVERFLOW":
+				return "Time Limit Exceeded";
+			default:
+				return "Unknown";
+		}
+	};
+
+	const getStatusColor = () => {
+		switch (submission.result) {
+			case "ACCEPTED":
+				return "text-green-600 dark:text-green-400";
+			case "WRONG_ANSWER":
+				return "text-red-600 dark:text-red-400";
+			case "STACK_OVERFLOW":
+				return "text-yellow-600 dark:text-yellow-400";
+			default:
+				return "text-red-600 dark:text-red-400";
+		}
+	};
+
+	const handleToggleExpand = async () => {
+		if (!isExpanded && !hasLoadedResults && submission.id) {
+			await onFetchResults(submission.id);
+			setHasLoadedResults(true);
+		}
+		setIsExpanded(!isExpanded);
+	};
+
+	const isAccepted = submission.result === "ACCEPTED";
+
+	return (
+		<div className={`border rounded-lg transition-all duration-200 hover:shadow-sm ${themeClasses.border} ${themeClasses.cardBg}`}>
+			{/* Header - Always visible */}
+			<div
+				className="p-4 cursor-pointer select-none"
+				onClick={handleToggleExpand}
+			>
+				<div className="flex items-center justify-between">
+					<div className="flex items-center space-x-3">
+						{/* Expand/Collapse Icon */}
+						{isExpanded ? (
+							<ChevronDown className={`h-4 w-4 ${themeClasses.muted} transition-transform`} />
+						) : (
+							<ChevronRight className={`h-4 w-4 ${themeClasses.muted} transition-transform`} />
+						)}
+
+						{/* Status Icon & Text */}
+						<div className="flex items-center space-x-2">
+							{getStatusIcon()}
+							<span className={`font-medium text-sm ${getStatusColor()}`}>
+								{getStatusText()}
+							</span>
+						</div>
+
+						{/* Score Badge for accepted solutions */}
+						{isAccepted && submission.score && (
+							<div className="flex items-center space-x-1 bg-green-100 dark:bg-green-900/20 px-2 py-1 rounded-full">
+								<Trophy className="h-3 w-3 text-green-600 dark:text-green-400" />
+								<span className="text-xs font-semibold text-green-700 dark:text-green-300">
+									{submission.score}
+								</span>
+							</div>
+						)}
+					</div>
+
+					<div className="flex items-center space-x-4 text-xs">
+						{/* Performance Metrics */}
+						{submission.time && (
+							<div className={`flex items-center space-x-1 ${themeClasses.muted}`}>
+								<Clock className="h-3 w-3" />
+								<span>{submission.time} s</span>
+							</div>
+						)}
+						{submission.memory && (
+							<div className={`flex items-center space-x-1 ${themeClasses.muted}`}>
+								<span>💾</span>
+								<span>{submission.memory} kb</span>
+							</div>
+						)}
+
+						{/* Timestamp */}
+						{submission.createdAt && (
+							<span className={themeClasses.muted}>
+								{formatDate(submission.createdAt)}
+							</span>
+						)}
+					</div>
+				</div>
+			</div>
+
+			{/* Expanded Content */}
+			{isExpanded && (
+				<div className={`border-t px-4 pb-4 ${themeClasses.border}`}>
+					{isLoading ? (
+						<div className="flex items-center justify-center py-4">
+							<Loader2 className={`h-4 w-4 animate-spin mr-2 ${themeClasses.muted}`} />
+							<span className={`text-sm ${themeClasses.muted}`}>Loading test results...</span>
+						</div>
+					) : results.length > 0 ? (
+						<div className="mt-3 space-y-2">
+							<h4 className={`font-medium text-sm ${themeClasses.text} mb-2`}>
+								Test Cases ({results.length})
+							</h4>
+							{results.map((result, resultIndex) => (
+								<div
+									key={resultIndex}
+									className={`border rounded p-3 text-xs ${themeClasses.border} ${themeClasses.mutedBg}`}
+								>
+									<div className="flex items-center justify-between mb-2">
+										<span className={`font-medium ${themeClasses.text}`}>
+											Test Case {resultIndex + 1}
+										</span>
+										<div className="flex items-center space-x-2">
+											{result.result === "ACCEPTED" ? (
+												<CheckCircle className="h-3 w-3 text-green-500" />
+											) : (
+												<XCircle className="h-3 w-3 text-red-500" />
+											)}
+											<span className={`text-xs ${result.result === "ACCEPTED" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+												{result.result === "ACCEPTED" ? "Accepted" : "Failed"}
+											</span>
+										</div>
+									</div>
+
+									{/* Test case details */}
+									<div className="space-y-1">
+										{/* Error output */}
+										{result.error && (
+											<div>
+												<span className="font-medium text-red-600 dark:text-red-400">Error: </span>
+												<code className="text-red-600 dark:text-red-400 bg-gray-100 dark:bg-gray-800 px-1 rounded text-xs">
+													{result.error}
+												</code>
+											</div>
+										)}
+
+										{/* Performance */}
+										<div className={`flex items-center space-x-3 pt-1 ${themeClasses.muted}`}>
+											{result.time != null && (
+												<span>
+													<Clock className="h-3 w-3 inline mr-1" />
+													{result.time} s
+												</span>
+											)}
+											{result.memory != null && (
+												<span>💾 {result.memory} kb</span>
+											)}
+											{result.point != null && (
+												<span>🏆 {result.point} pts</span>
+											)}
+										</div>
+									</div>
+								</div>
+							))}
+						</div>
+					) : isAccepted ? (
+						<div className={`text-center py-4 ${themeClasses.success}`}>
+							<Trophy className="h-6 w-6 mx-auto mb-2" />
+							<p className="text-sm font-medium">All test cases passed!</p>
+							{submission.score && (
+								<p className="text-xs mt-1">Score: {submission.score}</p>
+							)}
+						</div>
+					) : (
+						<div className={`text-center py-4 ${themeClasses.muted}`}>
+							<p className="text-sm">No detailed results available</p>
+						</div>
+					)}
+				</div>
+			)}
+		</div>
+	);
+}
+
 export default function ProblemSolvePage() {
-	const params = useParams();
+	const problemParams = useParams<{ slug: string }>().slug[0];
+	const problemId = problemParams.split("-").pop();
+	const [activeTab, setActiveTab] = useState<'descriptions' | 'problems' | 'results' | 'run'>('descriptions')
+	const [loadingSubmissionIds, setLoadingSubmissionIds] = useState<Set<string>>(new Set());
 
-	const problemId = params.id as string;
-
-	const [problem, setProblem] = useState<Problem>(mockProblems[0]);
-
+	// useEditor giờ sẽ handle tất cả logic liên quan đến problem
 	const {
+		// Problem states
+		problem,
+		isLoadingProblem,
+		problemError,
+
+		// Editor states
 		language,
-		code, setCode,
-		theme, handleToggleTheme,
-		testResults,
-		activeTab, setActiveTab,
+		code,
+		setCode,
+		theme,
+		handleToggleTheme,
+		submissions,
+		results,
+		isLoading,
 		isRunning,
 		isSubmitting,
-		handleSubmit,
+
+		// Actions
+		handleFetchSubmissions,
+		handleFetchResults: originalHandleFetchResults,
+		handleSubmit: originalHandleSubmit,
 		handleRunCode,
 		handleDownloading,
 		handleReset,
 		handleLanguageChange,
-		handleEditorDidMount
-	} = useEditor();
+		handleEditorDidMount,
+		clearError
+	} = useEditor({ problemId: problemId! });
 
-	const {
-		getDifficultyColor
-	} = useProblem();
+	const handleFetchResults = async (submissionId: string) => {
+		setLoadingSubmissionIds(prev => new Set(prev).add(submissionId));
+		try {
+			await originalHandleFetchResults(submissionId);
+		} finally {
+			setLoadingSubmissionIds(prev => {
+				const newSet = new Set(prev);
+				newSet.delete(submissionId);
+				return newSet;
+			});
+		}
+	}
 
-	// Theme classes based on theme variable (matching vs-dark Monaco theme)
+	const handleSubmit = async () => {
+		await originalHandleSubmit();
+		setActiveTab('results');
+	}
+
+	// Theme classes
 	const getThemeClasses = () => {
 		const isDark = theme === 'vs-dark';
 		return {
@@ -63,238 +310,194 @@ export default function ProblemSolvePage() {
 	const themeClasses = getThemeClasses();
 	const isDark = theme === 'vs-dark';
 
-	const renderBackButton = () => {
+	// Loading state
+	if (isLoadingProblem) {
 		return (
-			<Button variant={"link"} asChild className={`cursor-pointer ${themeClasses.text}`}>
-				<Link href={`/problems/${problemId}`}>
-					<ArrowLeft className="h-4 w-4 mr-1" />
-					Go Back
-				</Link>
-			</Button>
-		)
+			<LoadingOverlay />
+		);
 	}
 
-	const renderTopBar = () => {
+	// Error state
+	if (problemError || !problem) {
 		return (
-			<div className={`border-b p-4 ${themeClasses.border} ${themeClasses.background}`}>
-				<div className="flex items-center justify-between">
-					<div className="flex items-center space-x-4">
-						{/* Back button */}
-						{renderBackButton()}
-						{/* Problem Info */}
-						<div className="flex items-center space-x-2">
-							<h1 className={`font-semibold ${themeClasses.text}`}>{problem.title}</h1>
-							<Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
+			<FullscreenLayout>
+				<div className={`h-[calc(100vh-4rem)] flex items-center justify-center ${themeClasses.background}`}>
+					<div className={`text-center ${themeClasses.text}`}>
+						<div className={`text-red-500 mb-4`}>
+							<XCircle className="h-12 w-12 mx-auto mb-2" />
+							<p className="text-lg font-semibold">Error</p>
 						</div>
+						<p className={themeClasses.muted}>{problemError || "Problem not found"}</p>
+						<Button variant="outline" className="mt-4" asChild>
+							<Link href="/problems">Back to Problems</Link>
+						</Button>
+					</div>
+				</div>
+			</FullscreenLayout>
+		);
+	}
+
+	const renderBackButton = () => (
+		<Button variant={"link"} asChild className={`cursor-pointer ${themeClasses.text}`}>
+			<Link href={`/problems/${problemParams}`}>
+				<ArrowLeft className="h-4 w-4 mr-1" />
+				Go Back
+			</Link>
+		</Button>
+	);
+
+	const renderTopBar = () => (
+		<div className={`border-b p-4 ${themeClasses.border} ${themeClasses.background}`}>
+			<div className="flex items-center justify-between">
+				<div className="flex items-center space-x-4">
+					{renderBackButton()}
+					<div className="flex items-center space-x-2">
+						<h1 className={`font-semibold ${themeClasses.text}`}>{problem.title}</h1>
+						<Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
 					</div>
 				</div>
 			</div>
-		)
-	}
+		</div>
+	);
 
-	const renderProblemInfo = () => {
-		return (
-			<TabsContent value="problem" className="mt-4">
-				<div className="space-y-4">
-					<div>
-						<h3 className={`font-semibold mb-2 ${themeClasses.text}`}>Mô tả</h3>
-						<p className={`text-sm leading-relaxed whitespace-pre-line ${themeClasses.text}`}>{problem.description}</p>
+	const renderProblemInfo = () => (
+		<TabsContent value="descriptions" className="mt-4">
+			<div className="space-y-4">
+				<div>
+					<h3 className={`font-semibold mb-2 text-lg ${themeClasses.text}`}>Description:</h3>
+					<p className={`text-sm leading-relaxed whitespace-pre-line ${themeClasses.text}`}>{problem.description}</p>
+				</div>
+				<div>
+					<h3 className={`font-semibold mb-2 text-lg ${themeClasses.text}`}>Constraints:</h3>
+					<ul className="text-sm space-y-1">
+						{problem.constraints.map((constraint, index) => (
+							<li key={index} className="flex items-center">
+								<span className={`mr-2 ${themeClasses.muted}`}>•</span>
+								<code className={`text-xs ${themeClasses.mutedBg} ${themeClasses.text} px-1 rounded`}>{constraint}</code>
+							</li>
+						))}
+					</ul>
+				</div>
+			</div>
+		</TabsContent>
+	);
+
+	const renderProblemExamples = () => (
+		<TabsContent value="examples" className="mt-4">
+			<div className="space-y-4">
+				{problem.examples.map((example, index) => (
+					<div key={index} className={`border rounded-lg p-4 ${themeClasses.border} ${themeClasses.cardBg}`}>
+						<h4 className={`font-semibold mb-3 text-lg ${themeClasses.text}`}>Example {index + 1}:</h4>
+						<div className="space-y-2 text-sm">
+							<div>
+								<span className={`font-medium ${themeClasses.text}`}>Input: </span>
+								<code className={`${themeClasses.mutedBg} ${themeClasses.text} block px-2 py-3 mt-1 rounded font-mono`}>{example.input}</code>
+							</div>
+							<div>
+								<span className={`font-medium ${themeClasses.text}`}>Output: </span>
+								<code className={`${themeClasses.mutedBg} ${themeClasses.text} block px-2 py-3 mt-1 rounded font-mono`}>{example.output}</code>
+							</div>
+							{example.explanation && (
+								<div>
+									<span className={`font-medium ${themeClasses.text}`}>Explanation: </span>
+									<span className={themeClasses.muted}>{example.explanation}</span>
+								</div>
+							)}
+						</div>
 					</div>
+				))}
+			</div>
+		</TabsContent>
+	);
 
-					{problem.constraints && (
-						<div>
-							<h3 className={`font-semibold mb-2 ${themeClasses.text}`}>Ràng buộc</h3>
-							<ul className="text-sm space-y-1">
-								{problem.constraints.map((constraint, index) => (
-									<li key={index} className="flex items-start">
-										<span className={`mr-2 ${themeClasses.muted}`}>•</span>
-										<code className={`text-xs ${themeClasses.mutedBg} ${themeClasses.text} px-1 rounded`}>{constraint}</code>
-									</li>
-								))}
-							</ul>
-						</div>
-					)}
-				</div>
-			</TabsContent>
-		)
-	}
+	const renderSubmissionResults = () => (
+		<TabsContent value="results" className="mt-4">
+			<div className="space-y-3">
+				{submissions.length === 0 ? (
+					<div className={`text-center py-8 ${themeClasses.muted}`}>
+						<div className="mb-2">📝</div>
+						<p className="text-sm">Chưa có kết quả. Hãy chạy code để xem kết quả.</p>
+					</div>
+				) : (
+					<div className="space-y-2">
+						<h3 className={`font-semibold text-sm ${themeClasses.text} mb-3`}>
+							Submissions ({submissions.length})
+						</h3>
+						{submissions.map((submission, index) => (
+							<SubmissionItem
+								key={submission.id || index}
+								submission={submission}
+								index={index}
+								themeClasses={themeClasses}
+								onFetchResults={handleFetchResults}
+								results={results[submission.id] || []}
+								loadingSubmissionIds={loadingSubmissionIds}
+							/>
+						))}
+					</div>
+				)}
+			</div>
+		</TabsContent>
+	);
 
-	const renderProblemExamples = () => {
-		return (
-			<TabsContent value="examples" className="mt-4">
-				<div className="space-y-4">
-					{problem.examples?.map((example, index) => (
-						<div key={index} className={`border rounded-lg p-4 ${themeClasses.border} ${themeClasses.cardBg}`}>
-							<h4 className={`font-semibold mb-3 ${themeClasses.text}`}>Ví dụ {index + 1}:</h4>
-							<div className="space-y-2 text-sm">
-								<div>
-									<span className={`font-medium ${themeClasses.text}`}>Input: </span>
-									<code className={`${themeClasses.mutedBg} ${themeClasses.text} px-2 py-1 rounded`}>{example.input}</code>
-								</div>
-								<div>
-									<span className={`font-medium ${themeClasses.text}`}>Output: </span>
-									<code className={`${themeClasses.mutedBg} ${themeClasses.text} px-2 py-1 rounded`}>{example.output}</code>
-								</div>
-								{example.explanation && (
-									<div>
-										<span className={`font-medium ${themeClasses.text}`}>Giải thích: </span>
-										<span className={themeClasses.muted}>{example.explanation}</span>
-									</div>
-								)}
-							</div>
-						</div>
-					))}
-				</div>
-			</TabsContent>
-		)
-	}
+	const renderLeftPanel = () => (
+		<ResizablePanel defaultSize={40} minSize={30}>
+			<div className={`h-full overflow-auto p-6 ${themeClasses.background}`}>
+				{/* Tabs */}
+				<Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ('descriptions' | 'problems' | 'results' | 'run'))} className={isDark ? 'dark' : ''}>
+					<TabsList className={`grid w-full grid-cols-4 ${themeClasses.mutedBg} ${themeClasses.border}`}>
+						<TabsTrigger className={`cursor-pointer data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="descriptions">Description</TabsTrigger>
+						<TabsTrigger className={`cursor-pointer data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="examples">Examples</TabsTrigger>
+						<TabsTrigger className={`cursor-pointer data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="results">Results</TabsTrigger>
+						<TabsTrigger className={`cursor-pointer data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="run">Run</TabsTrigger>
+					</TabsList>
+					{/* Tab content */}
+					{renderProblemInfo()}
+					{renderProblemExamples()}
+					{renderSubmissionResults()}
+				</Tabs>
+			</div>
+		</ResizablePanel>
+	);
 
-	const renderSubmissionResults = () => {
-		return (
-			<TabsContent value="output" className="mt-4">
-				<div className="space-y-4">
-					{testResults.length === 0 ? (
-						<p className={`text-sm ${themeClasses.muted}`}>Chưa có kết quả. Hãy chạy code để xem kết quả.</p>
-					) : (
-						testResults.map((result, index) => (
-							<div key={index} className={`border rounded-lg p-4 ${themeClasses.border} ${themeClasses.cardBg}`}>
-								{result.status === "Accepted" ? (
-									<div className="space-y-2">
-										<div className={`flex items-center ${themeClasses.success}`}>
-											<CheckCircle className="h-5 w-5 mr-2" />
-											<span className="font-semibold">Accepted</span>
-										</div>
-										<div className="grid grid-cols-3 gap-4 text-sm">
-											<div>
-												<span className={themeClasses.muted}>Runtime: </span>
-												<span className={`font-medium ${themeClasses.text}`}>{result.runtime}</span>
-											</div>
-											<div>
-												<span className={themeClasses.muted}>Memory: </span>
-												<span className={`font-medium ${themeClasses.text}`}>{result.memory}</span>
-											</div>
-											<div>
-												<span className={themeClasses.muted}>Tests: </span>
-												<span className={`font-medium ${themeClasses.text}`}>{result.testsPassed}</span>
-											</div>
-										</div>
-									</div>
-								) : (
-									<div className="space-y-2">
-										<div className="flex items-center justify-between">
-											<span className={`text-sm font-medium ${themeClasses.text}`}>Test case {index + 1}</span>
-											{result.status === "passed" ? (
-												<CheckCircle className={`h-4 w-4 ${themeClasses.success}`} />
-											) : (
-												<XCircle className={`h-4 w-4 ${themeClasses.error}`} />
-											)}
-										</div>
-										<div className="text-xs space-y-1">
-											<div>
-												<span className={themeClasses.muted}>Input: </span>
-												<code className={`${themeClasses.mutedBg} ${themeClasses.text} px-1 rounded`}>{result.input}</code>
-											</div>
-											<div>
-												<span className={themeClasses.muted}>Expected: </span>
-												<code className={`${themeClasses.mutedBg} ${themeClasses.text} px-1 rounded`}>{result.expected}</code>
-											</div>
-											<div>
-												<span className={themeClasses.muted}>Actual: </span>
-												<code className={`${themeClasses.mutedBg} ${themeClasses.text} px-1 rounded`}>{result.actual}</code>
-											</div>
-											<div className={`flex gap-4 ${themeClasses.text}`}>
-												<span>
-													<Clock className="h-3 w-3 inline mr-1" />
-													{result.runtime}
-												</span>
-												<span>💾 {result.memory}</span>
-											</div>
-										</div>
-									</div>
-								)}
-							</div>
-						))
-					)}
-				</div>
-			</TabsContent>
-		)
-	}
-
-	const renderLeftPanel = () => {
-		return (
-			<ResizablePanel defaultSize={40} minSize={30}>
-				<div className={`h-full overflow-auto p-6 ${themeClasses.background}`}>
-					<Tabs value={activeTab} onValueChange={setActiveTab} className={isDark ? 'dark' : ''}>
-						<TabsList className={`grid w-full grid-cols-3 ${themeClasses.mutedBg} ${themeClasses.border}`}>
-							<TabsTrigger className={`cursor-pointer data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="problem">Đề bài</TabsTrigger>
-							<TabsTrigger className={`cursor-pointer data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="examples">Ví dụ</TabsTrigger>
-							<TabsTrigger className={`cursor-pointer data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="output">Kết quả</TabsTrigger>
-						</TabsList>
-						{/* Problem Information */}
-						{renderProblemInfo()}
-						{/* Problem Examples */}
-						{renderProblemExamples()}
-						{/* SubmissionResults */}
-						{renderSubmissionResults()}
-					</Tabs>
-				</div>
-			</ResizablePanel>
-		)
-	}
-
-	const renderRightPanel = () => {
-		return (
-			<ResizablePanel defaultSize={60} minSize={40}>
-				<div className={`h-full flex flex-col ${themeClasses.editorBg}`}>
-					{/* Editor Header */}
-					<CodeControl
-						isRunning={isRunning}
-						isSubmitting={isSubmitting}
-						language={language}
+	const renderRightPanel = () => (
+		<ResizablePanel defaultSize={60} minSize={40}>
+			<div className={`h-full flex flex-col ${themeClasses.editorBg}`}>
+				<CodeControl
+					isRunning={isRunning}
+					isSubmitting={isSubmitting}
+					language={language}
+					theme={theme}
+					handleRunCode={handleRunCode}
+					handleSubmit={handleSubmit}
+					handleDownload={handleDownloading}
+					handleResetCode={handleReset}
+					handleToggleTheme={handleToggleTheme}
+					handleLanguageChange={handleLanguageChange}
+				/>
+				<div className="flex-1">
+					<Editor
+						language={language.toLowerCase()}
+						code={code}
 						theme={theme}
-						handleRunCode={handleRunCode}
-						handleSubmit={handleSubmit}
-						handleDownload={handleDownloading}
-						handleResetCode={handleReset}
-						handleToggleTheme={handleToggleTheme}
-						handleLanguageChange={handleLanguageChange}
+						onEditorChange={setCode}
+						onEditorMount={handleEditorDidMount}
 					/>
-					{/* Editor */}
-					<div className="flex-1">
-						<Editor
-							language={language.toLowerCase()}
-							code={code}
-							theme={theme}
-							onEditorChange={setCode}
-							onEditorMount={handleEditorDidMount}
-						/>
-					</div>
 				</div>
-			</ResizablePanel>
-		)
-	}
-
-	const renderMainContent = () => {
-		return (
-			<ResizablePanelGroup direction="horizontal" className="h-[calc(100%-5rem)]">
-				{/* Left Panel - Problem Description */}
-				{renderLeftPanel()}
-				{/* Resize Bar */}
-				<ResizableHandle withHandle />
-				{/* Right Panel - Code Editor */}
-				{renderRightPanel()}
-			</ResizablePanelGroup>
-		)
-	}
+			</div>
+		</ResizablePanel>
+	);
 
 	return (
 		<FullscreenLayout>
 			<div className={`h-[calc(100vh-4rem)] ${themeClasses.background}`}>
-				{/* Top Bar */}
 				{renderTopBar()}
-				{/* Main Content */}
-				{renderMainContent()}
+				<ResizablePanelGroup direction="horizontal" className="h-[calc(100%-5rem)]">
+					{renderLeftPanel()}
+					<ResizableHandle withHandle />
+					{renderRightPanel()}
+				</ResizablePanelGroup>
 			</div>
 		</FullscreenLayout>
-	)
+	);
 }

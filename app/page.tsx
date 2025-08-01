@@ -1,12 +1,13 @@
 import FeatureHightlight from "@/components/ui/feature-highlight"
 import MainLogo from "@/components/main-logo"
 import CTAButtons, { CTAButtonsType } from "@/components/cta-buttons"
+import UserAuth from "@/components/user-auth"
 
 export default function HomePage() {
   const ctaButtons: { type: CTAButtonsType }[] = [
     { type: 'code' },
-    { type: 'post' },
-    { type: 'rank' }
+    // { type: 'post' },
+    // { type: 'rank' }
   ]
 
   return (
@@ -21,6 +22,8 @@ export default function HomePage() {
         <div className="w-full max-w-6xl text-center">
           {/* Main logo and title */}
           <MainLogo />
+          {/* User Auth */}
+          <UserAuth />
           {/* CTA Buttons */}
           <CTAButtons buttons={ctaButtons} />
           {/* Feature highlights */}

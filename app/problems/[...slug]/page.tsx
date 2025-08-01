@@ -1,29 +1,28 @@
-'use client'
 import ContainerLayout from "@/components/layout/container-layout";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useProblem } from "@/hooks/use-problem";
-import { mockProblems } from "@/lib/mock-data/mock-problem";
+import { ProblemService } from "@/lib/services/problem.service";
 import { stringToSlug } from "@/lib/string-utils";
-import { Problem } from "@/types/problem";
+import { getDifficultyColor } from "@/lib/utils";
 import { ArrowLeft, Play, Share, ThumbsDown, ThumbsUp } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useState } from "react";
 
-export default function ProblemDetailPage() {
-  const params = useParams();
-  const problemId = params.id as string;
+export default async function ProblemDetailPage({
+  params
+}: {
+  params: Promise<{ slug: string[] }>
+}) {
+  const problemParams = (await params).slug[0];
 
-  console.log(problemId)
+  const slugAndId = problemParams.split("-");
 
-  const [problem, setProblem] = useState<Problem>(mockProblems.find((p) => p.id === problemId) || mockProblems[0]);
+  const problemId = slugAndId.pop();
 
-  const {
-    getDifficultyColor
-  } = useProblem();
+  const slug = slugAndId.join('-')
+
+  const problem = await ProblemService.getProblemById(problemId as string);
 
   const renderBreadCrumb = () => {
     return (
@@ -43,7 +42,7 @@ export default function ProblemDetailPage() {
           <BreadcrumbSeparator className="text-gray-400" />
           <BreadcrumbItem>
             <BreadcrumbPage className="text-black font-medium">
-              Slug
+              {slug}
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
@@ -75,12 +74,12 @@ export default function ProblemDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Problem Content - Takes 3 columns */}
           <div className="lg:col-span-3">
-            <Card className="rounded-md shadow-xl">
+            <Card className="rounded-md shadow-xl gap-0">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-2xl mb-2">
-                      {problemId}. {problem.title}
+                      .{problem.title}
                     </CardTitle>
                     <div className="flex items-center gap-3 mb-4">
                       <Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
@@ -92,7 +91,7 @@ export default function ProblemDetailPage() {
                       <Share className="h-4 w-4 mr-2" />
                       Share
                     </Button>
-                    <Link href={`/problems/solve/${stringToSlug(problem.title)}?id=${problemId}`}>
+                    <Link href={`/problems/solve/${stringToSlug(problem.title)}-${problemId}`}>
                       <Button className="cursor-pointer">
                         <Play className="h-4 w-4 mr-1" />
                         Solve

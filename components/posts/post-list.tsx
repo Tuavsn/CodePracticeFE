@@ -1,15 +1,18 @@
-import { mockPosts } from "@/lib/mock-data/mock-post"
+'use client'
 import { Post } from "@/types/post"
 import { useState } from "react"
 import PostCard from "./post-card";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 
 interface PostListProps {
   // filter?: PostFilter
+  postList: Post[];
 }
 
-export default function PostList() {
-  const [posts, setPosts] = useState<Post[]>(mockPosts);
+export default function PostList({
+  postList
+}: PostListProps) {
+  const [posts, setPosts] = useState<Post[]>(postList);
 
   return (
     <Card className="rounded-none p-0 m-0 backdrop-blur-sm border-0 hover-lift gap-0 shadow-2xl">

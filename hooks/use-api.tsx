@@ -1,4 +1,4 @@
-import { ApiError } from "@/lib/api/api-client";
+import { ApiError } from "@/lib/error-handling";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface UseApiOptions {

@@ -23,7 +23,8 @@ export const ERROR_CODE = {
   POST_NOT_FOUND: 'POST_NOT_FOUND',
   COMMENT_NOT_FOUND: 'COMMENT_NOT_FOUND',
   PROBLEM_NOT_FOUND: 'PROBLEM_NOT_FOUND',
-  SUBMISSION_NOT_FOUND: 'SUBMISSION_NOT_FOUND'
+  SUBMISSION_NOT_FOUND: 'SUBMISSION_NOT_FOUND',
+  BUSINESS_ERROR: 'BUSINESS_ERROR'
 }
 
 // Base ApiError class
@@ -149,6 +150,19 @@ export class InternaServerlError extends ApiError {
     super(
       message,
       HTTP_STATUS.INTERNAL_SERVER,
+    );
+    this.name = this.constructor.name;
+  }
+}
+
+export class BusinessError extends ApiError {
+  constructor(
+    message: string = 'Business error',
+  ) {
+    super(
+      message,
+      HTTP_STATUS.BAD_REQUEST,
+      ERROR_CODE.BUSINESS_ERROR,
     );
     this.name = this.constructor.name;
   }

@@ -9,6 +9,7 @@ export const API_CONFIG = {
     USER: `${API_URL}/${API_PREFIX_V1}/users`,
     POST: `${API_URL}/${API_PREFIX_V1}/posts`,
     PROBLEM: `${API_URL}/${API_PREFIX_V1}/problems`,
+    SUBMISSION: `${API_URL}/${API_PREFIX_V1}/submissions`,
     NOTIFICATION: `${API_URL}/${API_PREFIX_V1}/notifications`,
   },
   // Rate Limiting

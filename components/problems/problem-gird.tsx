@@ -1,15 +1,16 @@
-'use client'
-import { mockProblems } from "@/lib/mock-data/mock-problem";
 import { Problem } from "@/types/problem";
-import { useState } from "react";
 import ProblemCard from "./problem-card";
 
-export default function ProblemGrid() {
-	const [problem, setProblem] = useState<Problem[]>(mockProblems);
+interface ProblemGridProps {
+	problems: Problem[]
+}
 
+export default function ProblemGrid({
+	problems
+}: ProblemGridProps) {
 	return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-			{problem.map((problem) => (
+		<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			{problems.map((problem) => (
 				<ProblemCard
 					key={problem.id}
 					problem={problem}

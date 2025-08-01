@@ -4,11 +4,15 @@ import CTAButtons, { CTAButtonsType } from "@/components/cta-buttons";
 import ContainerLayout from "@/components/layout/container-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProblemGrid from "@/components/problems/problem-gird";
+import { ProblemService } from "@/lib/services/problem.service";
 
-export default function ProblemPage() {
+export default async function ProblemPage() {
+  // Fetch problems
+  const problems = await ProblemService.getProblems();
+
   const ctaButtons: { type: CTAButtonsType }[] = [
-    { type: 'post' },
-    { type: 'rank' },
+    // { type: 'post' },
+    // { type: 'rank' },
   ]
 
   const renderBreadCrumb = () => {
@@ -135,7 +139,7 @@ export default function ProblemPage() {
       {renderBreadCrumb()}
 
       {/* Problem grid */}
-      <ProblemGrid />
+      <ProblemGrid problems={problems} />
 
     </ContainerLayout>
   )
