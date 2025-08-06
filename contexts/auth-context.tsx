@@ -1,3 +1,5 @@
+import { API_CONFIG } from "@/lib/api/api-config";
+import { AuthService } from "@/lib/services/auth.service";
 import { User } from "@/types/user";
 import { create } from "zustand";
 import { persist } from 'zustand/middleware'
@@ -33,30 +35,6 @@ const OAUTH_CONFIG = {
 	scope: 'openid profile email'
 }
 
-const generateCodeVerifier = (): string => {
-	const array = new Uint8Array(32);
-	crypto.getRandomValues(array);
-	return btoa(String.fromCharCode(...array))
-		.replace(/\+/g, '-')
-		.replace(/\//g, '_')
-		.replace(/=/g, '');
-};
-
-const generateCodeChallenge = async (verifier: string): Promise<string> => {
-	const encoder = new TextEncoder();
-	const data = encoder.encode(verifier);
-	const hash = await crypto.subtle.digest('SHA-256', data);
-	return btoa(String.fromCharCode(...new Uint8Array(hash)))
-		.replace(/\+/g, '-')
-		.replace(/\//g, '_')
-		.replace(/=/g, '');
-};
-
-const generateState = (): string => {
-	return Math.random().toString(36).substring(2, 15) +
-		Math.random().toString(36).substring(2, 15);
-};
-
 const initialState: AuthState = {
 	user: null,
 	accessToken: null,
@@ -70,74 +48,49 @@ export const useAuthContext = create<AuthStore>()(
 	persist(
 		(set, get) => ({
 			...initialState,
-			login: () => {
-				const initialOauthFlow = async () => {
-					set({ isLoading: true, error: null });
-					try {
-						// Generate PKCE parameters
-						const codeVerifier = generateCodeVerifier();
-						const codeChallenge = await generateCodeChallenge(codeVerifier);
-						const state = generateState();
-						// Store PKCE parameters in session storage
-						sessionStorage.setItem('oauth_code_verifier', codeVerifier);
-						sessionStorage.setItem('oauth_state', state);
-						// Construct authorization URL
-						const authParams = new URLSearchParams({
-							response_type: 'code',
-							client_id: OAUTH_CONFIG.clientId,
-							redirect_uri: OAUTH_CONFIG.redirectUri,
-							scope: OAUTH_CONFIG.scope,
-							state: state,
-							code_challenge: codeChallenge,
-							code_challenge_method: 'S256'
-						});
-						const authUrl = `${OAUTH_CONFIG.authServerUrl}/oauth2/authorize?${authParams}`;
-						window.location.href = authUrl;
-					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : 'Login initialization failed';
-						set({
-							isLoading: false,
-							error: errorMessage
-						});
-					}
+			login: async () => {
+				set({ isLoading: true, error: null });
+				try {
+					// Generate PKCE parameters
+					const codeVerifier = AuthService.generateCodeVerifier();
+					const codeChallenge = await AuthService.generateCodeChallenge(codeVerifier);
+					const state = AuthService.generateState();
+					// Store PKCE parameters in session storage
+					sessionStorage.setItem('oauth_code_verifier', codeVerifier);
+					sessionStorage.setItem('oauth_state', state);
+					// Construct authorization URL
+					window.location.href = AuthService.buildAuthUrl(codeChallenge, state);
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : 'Login initialization failed';
+					set({ isLoading: false, error: errorMessage });
+					throw error;
+				} finally {
+					set({ isLoading: false });
 				}
-				initialOauthFlow();
 			},
 			register: () => {
 				window.location.href = `${OAUTH_CONFIG.authServerUrl}/register`
 			},
 			logout: async () => {
 				set({ isLoading: true, error: null });
+				// Retrieve access token
+				const { accessToken } = get();
+				if (!accessToken) {
+					throw new Error('No access token token available');
+				}
 				// Revoke token
 				try {
-					const { accessToken } = get();
-					if (accessToken) {
-						await fetch(`${OAUTH_CONFIG}/oauth2/revoke`, {
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/x-www-form-urlencoded',
-								'Authorization': `Basic ${btoa(OAUTH_CONFIG.clientId + ':secret')}`
-							},
-							body: new URLSearchParams({
-								token: accessToken,
-								token_type_hint: 'access_token'
-							})
-						})
-					}
+					if (accessToken) await AuthService.revokeToken(accessToken);
 					// Clear state
-					set({
-						...initialState,
-						isLoading: false
-					})
+					set(initialState)
 					// Redirect to logout endpoint
 					// window.location.href = `${OAUTH_CONFIG.authServerUrl}/logout?post_logout_redirect_uri=${encodeURIComponent(OAUTH_CONFIG.postLogoutRedirectUrl)}`;
 				} catch (error) {
-					// Even if server logout fails, clear local state
-					set({
-						...initialState,
-						isLoading: false,
-						error: error instanceof Error ? error.message : 'Logout failed'
-					});
+					const errorMessage = error instanceof Error ? error.message : 'Logout failed';
+					set({ ...initialState, isLoading: false, error: errorMessage });
+					throw error;
+				} finally {
+					set({ isLoading: false });
 				}
 			},
 			handleAuthCallback: async (code: string) => {
@@ -146,53 +99,14 @@ export const useAuthContext = create<AuthStore>()(
 					// Retrieve PKCE parameters
 					const codeVerifier = sessionStorage.getItem('oauth_code_verifier');
 					const storedState = sessionStorage.getItem('oauth_state');
-
 					if (!codeVerifier || !storedState) {
 						throw new Error('Invalid OAuth State');
 					}
-
 					// Exchange authorization code for tokens
-					const tokenResponse = await fetch(`${OAUTH_CONFIG.authServerUrl}/oauth2/token`, {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/x-www-form-urlencoded',
-							'Authorization': `Basic ${btoa(OAUTH_CONFIG.clientId + ':secret')}`
-						},
-						body: new URLSearchParams({
-							grant_type: 'authorization_code',
-							code: code,
-							redirect_uri: OAUTH_CONFIG.redirectUri,
-							code_verifier: codeVerifier
-						})
-					});
-
-					if (!tokenResponse.ok) {
-						throw new Error('Token exchange failed')
-					}
-
-					const tokens = await tokenResponse.json();
-
-					// Decode JWT to get userInfo
-					const tokenPayload = JSON.parse(atob(tokens.access_token.split('.')[1]));
-					// Get detail user info
-					const userInfoResponse = await fetch(`${OAUTH_CONFIG.authServerUrl}/userinfo`, {
-						headers: {
-							'Authorization': `Bearer ${tokens.access_token}`
-						}
-					});
-					let userData = null;
-					if (userInfoResponse.ok) {
-						userData = await userInfoResponse.json();
-					}
-
-					// Create user object
-					const user: Partial<User> = {
-						id: tokenPayload.sub,
-						username: userData?.sub || tokenPayload.username || '',
-						email: userData?.email || '',
-						role: tokenPayload.roles || []
-					};
-
+					const tokens = await AuthService.exchangeCodeForToken(code, codeVerifier);
+					// Get User object
+					const user = await AuthService.buildUserFromToken(tokens.access_token);
+					// Set state
 					set({
 						user,
 						accessToken: tokens.access_token,
@@ -201,100 +115,56 @@ export const useAuthContext = create<AuthStore>()(
 						isLoading: false,
 						error: null
 					})
-
 					// Clean up session storage
 					sessionStorage.removeItem('oauth_code_verifier');
 					sessionStorage.removeItem('oauth_state');
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
-					set({
-						isLoading: false,
-						error: errorMessage,
-						isAuthenticated: false,
-						user: null,
-						accessToken: null,
-						refreshToken: null
-					});
+					set({ ...initialState, error: errorMessage });
 					throw error;
+				} finally {
+					set({ isLoading: false });
 				}
 			},
 			refreshAccessToken: async () => {
+				set({ isLoading: true, error: null })
+				// Retrieve refresh token
 				const { refreshToken } = get();
-
 				if (!refreshToken) {
 					throw new Error('No refresh token available');
 				}
-
 				try {
-					const response = await fetch(`${OAUTH_CONFIG.authServerUrl}/oauth2/token`, {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/x-www-form-urlencoded',
-							'Authorization': `Basic ${btoa(OAUTH_CONFIG.clientId + ':secret')}`
-						},
-						body: new URLSearchParams({
-							grant_type: 'refresh_token',
-							refresh_token: refreshToken
-						})
-					});
-
-					if (!response.ok) {
-						throw new Error('Token refresh failed');
-					}
-
-					const tokens = await response.json();
-
-					// Decode new token for user info
-					const tokenPayload = JSON.parse(atob(tokens.access_token.split('.')[1]));
-
-					set({
-						accessToken: tokens.access_token,
-						refreshToken: tokens.refresh_token || refreshToken, // Keep old refresh token if new one not provided
-						user: {
-							...get().user,
-							id: tokenPayload.sub,
-							username: tokenPayload.username,
-							roles: tokenPayload.roles || []
-						} as Partial<User>
-					});
+					// Retrieve access token from refresh token
+					const tokens = await AuthService.refreshAccessToken(refreshToken);
+					set({ accessToken: tokens.access_token, refreshToken: tokens.refresh_token || refreshToken, });
 				} catch (error) {
-					// If refresh fails, logout user
-					set({
-						...initialState,
-						error: 'Session expired. Please login again.'
-					});
+					const errorMessage = error instanceof Error ? error.message : 'Session expired. Please login again.';
+					set({ ...initialState, error: errorMessage });
 					throw error;
+				} finally {
+					set({ isLoading: false });
 				}
 			},
 			getCurrentUser: async () => {
+				set({ isLoading: true, error: null })
+				// Retrieve access token
 				const { accessToken } = get();
 				if (!accessToken) {
-					return;
+					throw new Error('No access token token available');
 				}
 				try {
-					const response = await fetch(`${OAUTH_CONFIG.authServerUrl}/userinfo`, {
-						headers: {
-							'Authorization': `Bearer ${accessToken}`
-						}
-					});
-
-					if (response.ok) {
-						const userData = await response.json();
-						const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
-
-						const user: Partial<User> = {
-							id: tokenPayload.sub,
-							username: userData.sub || tokenPayload.username,
-							email: userData.email,
-							role: tokenPayload.roles || []
-						};
-
-						set({ user });
-					}
+					// Retrieve Userinfo
+					const user = await AuthService.buildUserFromToken(accessToken);
+					set({ user });
 				} catch (error) {
-					console.error('Failed to get current user:', error);
+					const errorMessage = error instanceof Error ? error.message : 'Failed to get current user';
+					set({ ...initialState, error: errorMessage });
+					throw error;
+				} finally {
+					set({ isLoading: false });
 				}
 			},
+
 			clearError: () => {
 				set({ error: null })
 			},
@@ -302,14 +172,12 @@ export const useAuthContext = create<AuthStore>()(
 				set({ isLoading: loading })
 			},
 			initializeAuth: async () => {
+				// Retrieve tokens
 				const { accessToken, refreshToken } = get();
-
 				if (!accessToken) {
-					return;
+					return ;
 				}
-
 				try {
-					set({ isLoading: true })
 					// Check if token is still valid
 					const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
 					const now = Date.now() / 1000;
@@ -324,8 +192,6 @@ export const useAuthContext = create<AuthStore>()(
 				} catch (error) {
 					console.error('Auth initialization failed:', error);
 					set(initialState);
-				} finally {
-					set({ isLoading: false })
 				}
 			}
 		}),
