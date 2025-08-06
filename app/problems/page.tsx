@@ -12,7 +12,7 @@ export default async function ProblemPage() {
 
   const ctaButtons: { type: CTAButtonsType }[] = [
     { type: 'post' },
-    // { type: 'rank' },
+    { type: 'rank' },
   ]
 
   const renderBreadCrumb = () => {

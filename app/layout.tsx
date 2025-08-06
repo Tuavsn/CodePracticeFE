@@ -13,6 +13,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const fetchCache = 'force-no-store';
+
 export const metadata: Metadata = {
   title: "Coding Forum",
   description: "Nơi chia sẻ kiến thức và kết nối cộng đồng lập trình viên",

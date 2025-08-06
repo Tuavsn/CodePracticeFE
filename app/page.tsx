@@ -7,7 +7,7 @@ export default function HomePage() {
   const ctaButtons: { type: CTAButtonsType }[] = [
     { type: 'code' },
     { type: 'post' },
-    // { type: 'rank' }
+    { type: 'rank' }
   ]
 
   return (
