@@ -4,12 +4,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "../ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useComment } from "@/hooks/use-comment";
+import { useAuthContext } from "@/contexts/auth-context";
 
 interface CommentCardHeaderActionProps {
     comment: PostComment;
 }
 
 export default function CommentCardHeaderActions({ comment }: CommentCardHeaderActionProps) {
+
+    const { user } = useAuthContext();
 
     const { handleDeleteComment, handleFormDataChange } = useComment();
 
@@ -21,8 +24,12 @@ export default function CommentCardHeaderActions({ comment }: CommentCardHeaderA
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                {/* <DropdownMenuItem onClick={() => handleFormDataChange('content', comment.content)}>Edit</DropdownMenuItem> */}
-                <DropdownMenuItem onClick={() => handleDeleteComment(comment.id, 'post')}>Delete</DropdownMenuItem>
+                {user && user.id === comment.author.id && (
+                    <>
+                        {/* <DropdownMenuItem onClick={() => handleFormDataChange('content', comment.content)}>Edit</DropdownMenuItem> */}
+                        <DropdownMenuItem onClick={() => handleDeleteComment(comment.id, 'post')}>Delete</DropdownMenuItem>
+                    </>
+                )}
                 {/* <DropdownMenuItem>Report</DropdownMenuItem> */}
             </DropdownMenuContent>
         </DropdownMenu>
