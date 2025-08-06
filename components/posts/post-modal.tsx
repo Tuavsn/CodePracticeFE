@@ -1,122 +1,52 @@
 'use client'
 import { usePost } from "@/hooks/use-post";
-import { CreatePostRequest, Post, UpdatePostRequest } from "@/types/post"
-import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Edit, ImageIcon, Loader2, Plus, Upload, X } from "lucide-react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { usePostContext } from "@/contexts/post-context";
+import dynamic from "next/dynamic";
 
-interface PostModalProps {
-  mode: 'create' | 'update';
-  post?: Post;
-  trigger?: React.ReactNode;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}
+const TextEditor = dynamic(() => import('@/components/text-editor'), { ssr: false })
 
-export default function PostModal({ mode, post, trigger, open: controlledOpen, onOpenChange }: PostModalProps) {
-  const [internalOpen, setInternalOpen] = useState(false);
-
-  const router = useRouter();
+export default function PostModal() {
+  const { isOpen, mode, closeModal } = usePostContext();
 
   const {
     isLoading,
     error,
     formData,
-    setFormData,
     handleFormDataChange,
     handleResetFormData,
     handleThumbnailAdd,
     handleThumbnailRemove,
     handleImageAdd,
     handleImageRemove,
-    handleCreatePost,
-    handleUpdatePost,
+    handleSubmit,
     clearError
   } = usePost();
-
-  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
-  const setIsOpen = onOpenChange || setInternalOpen;
 
   const isCreateMode = mode === 'create';
   const modalTitle = isCreateMode ? 'Create Post' : 'Update Post';
   const submitText = isCreateMode ? 'Create' : 'Update';
   const submitLoadingText = isCreateMode ? 'Creating...' : 'Updating...';
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.title.trim() || !formData.content.trim()) {
-      toast.error("Please enter post title and post content");
-      return;
-    }
-
-    try {
-      if (mode === 'create') {
-        const request: CreatePostRequest = {
-          title: formData.title.trim(),
-          content: formData.content.trim(),
-          thumbnail: formData.thumbnail.trim(),
-          images: formData.images,
-          topics: formData.topics.split(',').map(topic => topic.trim()).filter(topic => topic)
-        };
-        await handleCreatePost(request);
-        toast.success("Post created successfully");
-      } else {
-        if (!post?.id) return;
-        const request: UpdatePostRequest = {
-          title: formData.title.trim(),
-          content: formData.content.trim(),
-          thumbnail: formData.thumbnail.trim(),
-          images: formData.images,
-          topics: formData.topics.split(',').map(topic => topic.trim()).filter(topic => topic)
-        };
-        await handleUpdatePost(post.id, request);
-        toast.success("Post updated successfully");
-      }
-      setIsOpen(false);
-      handleResetFormData();
-      router.refresh();
-    } catch (error) {
-      toast.error(mode === 'create' ? 'Create failed' : 'Update failed')
-    }
-  }
-
   const handleCancel = () => {
-    setIsOpen(false);
+    closeModal();
     handleResetFormData();
     if (error) clearError();
   }
 
-  const handleOpen = () => {
-    setIsOpen(true);
-    if (error) clearError();
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      handleCancel();
+    }
   }
 
-  useEffect(() => {
-    if (mode === 'update' && post) {
-      setFormData({
-        title: post.title,
-        content: post.content,
-        thumbnail: post.thumbnail,
-        topics: Array.isArray(post.topics) ? post.topics.join(', ') : post.topics,
-        images: post.images
-      })
-    } else {
-      handleResetFormData();
-    }
-  }, [mode, post])
-
   return (
-    <Dialog open={open} onOpenChange={setIsOpen} >
-      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-
-      <DialogContent className="sm:max-w-[600px]">
+    <Dialog open={isOpen} onOpenChange={handleOpenChange} >
+      <DialogContent size="xl" className="max-w-4xl w-[90vw] max-h-[90vh] overflow-y-scroll pr-2 -mr-2">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-900">
             {modalTitle}
@@ -169,14 +99,14 @@ export default function PostModal({ mode, post, trigger, open: controlledOpen, o
                     alt="Thumbnail preview"
                     className="w-32 h-24 object-cover rounded border"
                   />
-                  <button
+                  <Button
                     type="button"
                     onClick={handleThumbnailRemove}
                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                     disabled={isLoading}
                   >
                     <X className="h-3 w-3" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -186,13 +116,9 @@ export default function PostModal({ mode, post, trigger, open: controlledOpen, o
             <Label htmlFor="content" className="text-sm font-medium text-gray-700">
               Content <span className="text-red-500">*</span>
             </Label>
-            <Textarea
-              id="content"
-              placeholder="Enter Post Content..."
-              value={formData.content}
-              onChange={(e) => handleFormDataChange("content", e.target.value)}
-              className="w-full min-h-[120px] resize-none"
-              disabled={isLoading}
+            <TextEditor
+              data={formData.content}
+              setData={(value: string) => handleFormDataChange('content', value)}
             />
           </div>
           {/* Topic section */}
@@ -236,22 +162,22 @@ export default function PostModal({ mode, post, trigger, open: controlledOpen, o
             </div>
 
             {formData.images.length > 0 && (
-              <div className="grid grid-cols-2 gap-3 mt-3">
+              <div className="mt-3">
                 {formData.images.map((image, index) => (
-                  <div key={index} className="relative group">
+                  <div key={index} className="relative inline-block space-x-3">
                     <img
                       src={image.url}
                       alt={`Image ${index + 1}`}
-                      className="w-full h-24 object-cover rounded border"
+                      className="w-48 h-32 object-cover rounded border"
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleImageRemove(index)}
                       className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                       disabled={isLoading}
                     >
                       <X className="h-3 w-3" />
-                    </button>
+                    </Button>
                     <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
                       #{image.order}
                     </div>

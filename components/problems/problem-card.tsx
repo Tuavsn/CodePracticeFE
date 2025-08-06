@@ -74,7 +74,7 @@ export default function ProblemCard({
 				<div className="flex items-center justify-between mb-4">
 					<div className="flex items-center space-x-2">
 						<span className="text-xs text-muted-foreground">
-							Published Time: {formatDate(problem.createdAt as string)}
+							Published Time: {formatDate(problem.createdAt)}
 						</span>
 					</div>
 				</div>

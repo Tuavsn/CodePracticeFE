@@ -26,10 +26,16 @@ export type CreateProblemRequest = Pick<Problem, 'title' | 'description' | 'diff
 export type UpdateProblemRequest = Partial<CreateProblemRequest>;
 
 export interface ProblemComment extends BaseObject {
+  parentId: string;
+  problemId: string;
   author: User;
   content: string;
   commentReactions: CommentReaction[];
 }
+
+export type CreateProblemCommentRequest = Pick<ProblemComment, 'content' | 'problemId'>;
+
+export type UpdateProblemCommentRequest = Partial<CreateProblemCommentRequest>;
 
 export interface CommentReaction extends BaseObject {
   author: User;
@@ -51,10 +57,6 @@ export interface ProblemCodeTemplate {
   language: SubmissionLanguageValue;
   code: string;
 }
-
-// export interface ProblemSubmission extends BaseObject {
-//     problemI
-// }
 
 export interface ProblemFilter {
   difficulty?: (keyof typeof PROBLEM_COMPLEXITY);

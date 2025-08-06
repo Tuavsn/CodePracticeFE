@@ -7,6 +7,7 @@ export interface User extends BaseObject {
   avatar: string;
   phone: string;
   address: string;
+  gender: (keyof typeof GENDER);
   achievement: (keyof typeof ACHIEVEMENT);
   totalSubmissionPoint: number;
   status: (keyof typeof ACCOUNT_STATUS);

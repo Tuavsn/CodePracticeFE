@@ -237,7 +237,8 @@ function SubmissionItem({
 export default function ProblemSolvePage() {
 	const problemParams = useParams<{ slug: string }>().slug[0];
 	const problemId = problemParams.split("-").pop();
-	const [activeTab, setActiveTab] = useState<'descriptions' | 'problems' | 'results' | 'run'>('descriptions')
+	// const [activeTab, setActiveTab] = useState<'descriptions' | 'problems' | 'results' | 'run'>('descriptions')
+	const [activeTab, setActiveTab] = useState<'descriptions' | 'problems' | 'results'>('descriptions')
 	const [loadingSubmissionIds, setLoadingSubmissionIds] = useState<Set<string>>(new Set());
 
 	// useEditor giờ sẽ handle tất cả logic liên quan đến problem
@@ -338,7 +339,7 @@ export default function ProblemSolvePage() {
 	}
 
 	const renderBackButton = () => (
-		<Button variant={"link"} asChild className={`cursor-pointer ${themeClasses.text}`}>
+		<Button variant={"link"} asChild className={`${themeClasses.text}`}>
 			<Link href={`/problems/${problemParams}`}>
 				<ArrowLeft className="h-4 w-4 mr-1" />
 				Go Back
@@ -444,12 +445,13 @@ export default function ProblemSolvePage() {
 		<ResizablePanel defaultSize={40} minSize={30}>
 			<div className={`h-full overflow-auto p-6 ${themeClasses.background}`}>
 				{/* Tabs */}
-				<Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ('descriptions' | 'problems' | 'results' | 'run'))} className={isDark ? 'dark' : ''}>
+				{/* <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ('descriptions' | 'problems' | 'results' | 'run'))} className={isDark ? 'dark' : ''}> */}
+				<Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ('descriptions' | 'problems' | 'results'))} className={isDark ? 'dark' : ''}>
 					<TabsList className={`grid w-full grid-cols-4 ${themeClasses.mutedBg} ${themeClasses.border}`}>
-						<TabsTrigger className={`cursor-pointer data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="descriptions">Description</TabsTrigger>
-						<TabsTrigger className={`cursor-pointer data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="examples">Examples</TabsTrigger>
-						<TabsTrigger className={`cursor-pointer data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="results">Results</TabsTrigger>
-						<TabsTrigger className={`cursor-pointer data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="run">Run</TabsTrigger>
+						<TabsTrigger className={`data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="descriptions">Description</TabsTrigger>
+						<TabsTrigger className={`data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="examples">Examples</TabsTrigger>
+						<TabsTrigger className={`data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="results">Results</TabsTrigger>
+						{/* <TabsTrigger className={`data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="run">Run</TabsTrigger> */}
 					</TabsList>
 					{/* Tab content */}
 					{renderProblemInfo()}

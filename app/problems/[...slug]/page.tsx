@@ -52,7 +52,7 @@ export default async function ProblemDetailPage({
 
   const renderBackButton = () => {
     return (
-      <Button variant={"link"} asChild className="cursor-pointer mb-4">
+      <Button variant={"link"} asChild className="mb-4">
         <Link href="/problems">
           <ArrowLeft className="h-4 w-4 mr-1" />
           Go Back
@@ -92,7 +92,7 @@ export default async function ProblemDetailPage({
                       Share
                     </Button>
                     <Link href={`/problems/solve/${stringToSlug(problem.title)}-${problemId}`}>
-                      <Button className="cursor-pointer">
+                      <Button>
                         <Play className="h-4 w-4 mr-1" />
                         Solve
                       </Button>

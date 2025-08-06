@@ -3,98 +3,103 @@ import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
 import { formatDate } from "@/lib/date-utils";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
-import { Bookmark, Heart, MessageCircle, MoreHorizontal, Share } from "lucide-react";
 import { getArchievementIcon, getRoleIcon } from "@/lib/icon-utils";
 import Image from "next/image";
 import { Badge } from "../ui/badge";
 import { stringToSlug } from "@/lib/string-utils";
 import ContentDisplay from "../content-display";
+import PostCardHeaderActions from "./post-card-header-actions";
+import PostCardFooterActions from "./post-card-footer-actions";
 
 interface PostCardProps {
   post: Post;
-  onLike?: (postId: string) => void;
-  onBookMark?: (postId: string) => void;
 }
 
-export default function PostCard({ post, onLike, onBookMark }: PostCardProps) {
+export default function PostCard({
+  post,
+}: PostCardProps) {
 
   return (
     <Card className="border-0 rounded-none shadow-none gap-1 hover:bg-gray-70/30 hover:shadow-sm transition-all duration-200 group cursor-pointer relative overflow-hidden">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 min-w-0">
             {/* Avatar */}
-            <Avatar className="h-12 w-12 rounded-md">
-              <AvatarImage src={post.author.avatar || '/placeholder.svg'} alt={post.author.username} />
+            <Avatar className="h-12 w-12 rounded-md flex-shrink-0">
+              <AvatarImage src={post.author.avatar} alt={post.author.username} />
               <AvatarFallback>{post.author.email}</AvatarFallback>
             </Avatar>
-            <div>
-              <div className="flex items-center space-x-2 py-1">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center space-x-2 py-1 min-w-0">
                 {/* Username */}
-                <Link href={`/profile/${post.author.id}`} className="font-semibold hover:underline hover:text-[#0476D0]">
+                <Link 
+                  href={`/profile/${post.author.id}`} 
+                  className="font-semibold hover:underline hover:text-[#0476D0] truncate"
+                >
                   {post.author.username}
                 </Link>
                 {/* User role */}
-                {getRoleIcon(post.author.role)}
+                <div className="flex-shrink-0">
+                  {getRoleIcon(post.author.role)}
+                </div>
                 {/* User archievement */}
-                {getArchievementIcon(post.author.achievement)}
+                <div className="flex-shrink-0">
+                  {getArchievementIcon(post.author.achievement)}
+                </div>
               </div>
               {/* Created Date */}
-              <p className="text-sm text-muted-foreground">{formatDate(post.createdAt as string)}</p>
+              <p className="text-sm text-muted-foreground truncate">{formatDate(post.createdAt)}</p>
             </div>
           </div>
         </CardTitle>
-        <CardAction>
-          {/* Action button (Report | Hidden | Copy Link) */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="cursor-pointer" variant={"ghost"} size={"icon"}>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem className="cursor-pointer">Report</DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">Hidden</DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">Copy Link</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Card header actions */}
+        <CardAction className="flex-shrink-0">
+          <PostCardHeaderActions post={post} />
         </CardAction>
       </CardHeader>
+      
       {/* Content */}
-      <CardContent>
+      <CardContent className="pb-3">
         {/* Post content with image layout */}
-        <div className={`${post.thumbnail ? 'md:flex md:gap-4' : ''}`}>
-          {/* Text content */}
-          <div className={`${post.thumbnail ? "md:flex-1" : ""}`}>
+        <div className={`${post.thumbnail ? 'md:flex md:gap-4 md:items-start' : ''} min-w-0`}>
+          {/* Text content - takes remaining space */}
+          <div className={`${post.thumbnail ? "md:flex-1 md:min-w-0 md:overflow-hidden" : ""} min-w-0`}>
             {/* Post title */}
             <Link href={`/posts/${stringToSlug(post.title)}-${post.id}`}>
-              <h2 className="text-xl font-semibold mb-2 hover:text-[#0476D0] cursor-pointer">{post.title}</h2>
+              <h2 className="text-xl font-semibold mb-2 hover:text-[#0476D0] cursor-pointer line-clamp-2 break-words">
+                {post.title}
+              </h2>
             </Link>
+            
             {/* Post content */}
-            <ContentDisplay className="text-muted-foreground line-clamp-4" content={post.content} />
+            <div className="mb-3">
+              <ContentDisplay 
+                className="text-muted-foreground line-clamp-4" 
+                content={post.content} 
+              />
+            </div>
+            
             {/* Topics */}
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="flex flex-wrap gap-2">
               {post.topics.map((topic, index) => (
-                <Badge key={index} variant={"secondary"}>
+                <Badge key={index} variant={"secondary"} className="text-xs">
                   #{topic}
                 </Badge>
               ))}
             </div>
           </div>
-          {/* Image - show on top for mobile, right side for desktop */}
+          
+          {/* Image - fixed size, shows full image */}
           {post.thumbnail && (
-            <div className={`${post.thumbnail ? 'mt-3 md:mt-0 md:w-80 md:flex-shrink-0' : ''}`}>
-              <Link href={`/posts/${post.id}`}>
+            <div className="mt-3 md:mt-0 md:w-64 md:h-48 md:flex-shrink-0">
+              <Link href={`/posts/${stringToSlug(post.title)}-${post.id}`}>
                 {typeof post.thumbnail === 'string' && (
-                <Image
+                  <Image
                     src={post.thumbnail}
                     alt={post.title}
-                    width={0}
-                    height={0}
-                    sizes="100vw"
-                    className="w-full max-w-60 h-full max-h-60 mx-auto rounded-sm hover:opacity-90 transition-opacity cursor-pointer object-contain"
+                    width={256}
+                    height={192}
+                    className="w-full h-full rounded-sm hover:opacity-90 transition-opacity cursor-pointer object-contain bg-gray-50"
                   />
                 )}
               </Link>
@@ -102,33 +107,10 @@ export default function PostCard({ post, onLike, onBookMark }: PostCardProps) {
           )}
         </div>
       </CardContent>
-      {/* Footer */}
-      <CardFooter className="mt-2">
-        {/* Actions */}
-        <div className="w-full flex items-center justify-between">
-          {/* Post action buttons (Like, Comment & Share) */}
-          <div className="flex items-center space-x-4">
-            {/* Like Button */}
-            <Button className='cursor-pointer' variant={'ghost'}>
-              <Heart className="h-4 w-4" />
-              {post.postReactions ? post.postReactions.length : 0}
-            </Button>
-            {/* Comment Button */}
-            <Button className='cursor-pointer' variant={'ghost'}>
-              <MessageCircle className="h-4 w-4" />
-              {post.postComments ? post.postComments.length : 0}
-            </Button>
-            {/* Share Button */}
-            <Button className='cursor-pointer' variant={'ghost'}>
-              <Share />
-              Share Post
-            </Button>
-          </div>
-          {/* Bookmark button */}
-          <Button className="cursor-pointer" variant={'ghost'}>
-            <Bookmark className="h-4 w-4" />
-          </Button>
-        </div>
+      
+      {/* Card Footer Actions */}
+      <CardFooter className="pt-0">
+        <PostCardFooterActions post={post} />
       </CardFooter>
     </Card>
   )

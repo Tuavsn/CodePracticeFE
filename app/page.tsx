@@ -6,7 +6,7 @@ import UserAuth from "@/components/user-auth"
 export default function HomePage() {
   const ctaButtons: { type: CTAButtonsType }[] = [
     { type: 'code' },
-    // { type: 'post' },
+    { type: 'post' },
     // { type: 'rank' }
   ]
 

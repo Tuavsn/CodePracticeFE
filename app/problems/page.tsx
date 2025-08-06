@@ -11,7 +11,7 @@ export default async function ProblemPage() {
   const problems = await ProblemService.getProblems();
 
   const ctaButtons: { type: CTAButtonsType }[] = [
-    // { type: 'post' },
+    { type: 'post' },
     // { type: 'rank' },
   ]
 
@@ -133,7 +133,7 @@ export default async function ProblemPage() {
       <CTAButtons buttons={ctaButtons} />
 
       {/* Stats */}
-      {renderStats()}
+      {/* {renderStats()} */}
 
       {/* Breadcrumb */}
       {renderBreadCrumb()}

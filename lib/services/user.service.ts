@@ -1,12 +1,26 @@
 import { User } from "@/types/user";
 import { apiClient } from "../api/api-client";
 import { API_CONFIG } from "../api/api-config";
-import { Post, PostComment } from "@/types/post";
 
 export const UserService = {
+  getRankList: async (): Promise<User[]> => {
+    console.log("Fetching users with url:" + API_CONFIG.API_END_POINT.USER);
+    try {
+      const response = await apiClient.get<User[]>(
+        `${API_CONFIG.API_END_POINT.USER}`,
+        // {
+        //   cache: true,
+        //   cacheTTL: 5 * 60 * 1000
+        // }
+      );
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
   // getPersonalProfile: async(): Promise<User> {
   //   try {
-      
+
   //   } catch (error) {
 
   //   }

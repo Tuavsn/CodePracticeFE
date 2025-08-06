@@ -1,8 +1,8 @@
 export interface BaseObject {
   id: string;
-  createdAt?: string;
-  updatedAt?: string,
-  isDeleted?: boolean;
+  createdAt: string;
+  updatedAt: string,
+  isDeleted: boolean;
 }
 
 export const SUBMISSION_LANGUAGE = {

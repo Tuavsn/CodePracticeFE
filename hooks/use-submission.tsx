@@ -80,9 +80,10 @@ export function useEditor({ problemId }: useEditorProps) {
 	const handleFetchSubmissions = useCallback(async () => {
 		if (!problem) return;
 
+		setIsLoading(true);
+		setError(null);
+
 		try {
-			setIsLoading(true);
-			setError(null);
 			const response = await SubmissionService.getSubmissions(problem.id);
 			setSubmissions(response);
 		} catch (error) {
@@ -94,9 +95,10 @@ export function useEditor({ problemId }: useEditorProps) {
 	}, [problem]);
 
 	const handleFetchResults = useCallback(async (submissionId: string) => {
+		setIsLoading(true);
+		setError(null);
+
 		try {
-			setIsLoading(true);
-			setError(null);
 			const response = await SubmissionService.getResultBySubmission(submissionId);
 
 			// Store results with submission ID for mapping
@@ -123,9 +125,10 @@ export function useEditor({ problemId }: useEditorProps) {
 	const handleRunCode = useCallback(async () => {
 		if (!problem || !code) return;
 
+		setIsRunning(true);
+		setError(null);
+
 		try {
-			setIsRunning(true);
-			setError(null);
 
 			const solution: Solution = {
 				problemId: problem.id,
@@ -146,9 +149,10 @@ export function useEditor({ problemId }: useEditorProps) {
 	const handleSubmit = useCallback(async () => {
 		if (!problem || !code) return;
 
+		setIsSubmitting(true);
+		setError(null);
+		
 		try {
-			setIsSubmitting(true);
-			setError(null);
 
 			const solution: Solution = {
 				problemId: problem.id,

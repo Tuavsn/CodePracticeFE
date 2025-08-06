@@ -1,16 +1,11 @@
 import PostList from "@/components/posts/post-list";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, Plus, TrendingUp, Users } from "lucide-react";
+import { MessageSquare, TrendingUp, Users } from "lucide-react";
 import CTAButtons, { CTAButtonsType } from "@/components/cta-buttons";
 import ContainerLayout from "@/components/layout/container-layout";
-import { PostService } from "@/lib/services/post.service";
-import PostModal from "@/components/posts/post-modal";
-import { Button } from "@/components/ui/button";
 
-export default async function PostPage() {
-  // Fetch posts
-  const posts = await PostService.getPosts();
+export default function PostPage() {
 
   const ctaButtons: { type: CTAButtonsType }[] = [
     { type: 'code' },
@@ -87,52 +82,19 @@ export default async function PostPage() {
     )
   }
 
-  const renderCreatePostSection = () => {
-    return (
-      <div className="mb-8">
-        <div className="flex items-center justify-between p-6 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-gray-200 rounded-full">
-              <MessageSquare className="h-6 w-6 text-gray-800" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Share your ideas</h3>
-              <p className="text-sm text-gray-600">Create a new post to discuss with the community</p>
-            </div>
-          </div>
-
-          <PostModal
-            mode="create"
-            trigger={
-              <Button
-                className="cursor-pointer bg-black hover:bg-gray-800 text-white font-medium px-6 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Post
-              </Button>
-            }
-          />
-        </div>
-      </div>
-    );
-  };
-
   return (
     <ContainerLayout>
       {/* CTA Buttons */}
       <CTAButtons buttons={ctaButtons} />
 
       {/* Stats Section */}
-      {renderStatsSection()}
+      {/* {renderStatsSection()} */}
 
       {/* Breadcrumb */}
       {renderBreadCrumb()}
 
-      {/* Post create section */}
-      {renderCreatePostSection()}
-
       {/* Post list */}
-      <PostList postList={posts} />
+      <PostList />
 
     </ContainerLayout>
   )

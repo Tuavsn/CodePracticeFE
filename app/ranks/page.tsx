@@ -1,201 +1,25 @@
 import ContainerLayout from "@/components/layout/container-layout";
+import { UserService } from "@/lib/services/user.service";
+import { ACHIEVEMENT } from "@/types/user";
 import { Award, Crown, Medal, Trophy, Star } from "lucide-react";
 import React from "react";
 
-const ROLE = {
-	ADMIN: 'ADMIN',
-	USER: 'USER',
-	MODERATOR: 'MODERATOR'
-};
-
-const ACHIEVEMENT = {
-	BRONZE: 'BRONZE',
-	SILVER: 'SILVER',
-	GOLD: 'GOLD',
-	PLATINUM: 'PLATINUM',
-	DIAMOND: 'DIAMOND'
-};
-
-const ACCOUNT_STATUS = {
-	ACTIVE: 'ACTIVE',
-	INACTIVE: 'INACTIVE',
-	BANNED: 'BANNED'
-};
-
-const ACCOUNT_PROVIDER = {
-	LOCAL: 'LOCAL',
-	GOOGLE: 'GOOGLE',
-	FACEBOOK: 'FACEBOOK'
-};
-
-interface User {
-	id: string;
-	username: string;
-	role: keyof typeof ROLE;
-	email: string;
-	avatar: string;
-	phone: string;
-	address: string;
-	achievement: keyof typeof ACHIEVEMENT;
-	totalSubmissionPoint: number;
-	status: keyof typeof ACCOUNT_STATUS;
-	authProvider: keyof typeof ACCOUNT_PROVIDER;
-	devices: {
-		info: string;
-		ip: string;
-		expireAt: Date;
-		lastLoginTime: Date;
-	}[];
-	bio: string;
-}
-
-const mockUsers: User[] = [
-	{
-		id: '1',
-		username: 'AlexCoder',
-		role: 'USER',
-		email: 'alex@example.com',
-		avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-		phone: '+84901234567',
-		address: 'Hà Nội, Việt Nam',
-		achievement: 'DIAMOND',
-		totalSubmissionPoint: 15420,
-		status: 'ACTIVE',
-		authProvider: 'GOOGLE',
-		devices: [],
-		bio: 'Passionate full-stack developer'
-	},
-	{
-		id: '2',
-		username: 'SarahTech',
-		role: 'USER',
-		email: 'sarah@example.com',
-		avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b494?w=150&h=150&fit=crop&crop=face',
-		phone: '+84901234568',
-		address: 'TP.HCM, Việt Nam',
-		achievement: 'PLATINUM',
-		totalSubmissionPoint: 14850,
-		status: 'ACTIVE',
-		authProvider: 'LOCAL',
-		devices: [],
-		bio: 'Frontend specialist & UI/UX enthusiast'
-	},
-	{
-		id: '3',
-		username: 'MikeDevOps',
-		role: 'MODERATOR',
-		email: 'mike@example.com',
-		avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-		phone: '+84901234569',
-		address: 'Đà Nẵng, Việt Nam',
-		achievement: 'GOLD',
-		totalSubmissionPoint: 13990,
-		status: 'ACTIVE',
-		authProvider: 'FACEBOOK',
-		devices: [],
-		bio: 'DevOps engineer & cloud architecture expert'
-	},
-	{
-		id: '4',
-		username: 'JennyAI',
-		role: 'USER',
-		email: 'jenny@example.com',
-		avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-		phone: '+84901234570',
-		address: 'Hải Phòng, Việt Nam',
-		achievement: 'GOLD',
-		totalSubmissionPoint: 12750,
-		status: 'ACTIVE',
-		authProvider: 'GOOGLE',
-		devices: [],
-		bio: 'AI researcher & machine learning expert'
-	},
-	{
-		id: '5',
-		username: 'RyanMobile',
-		role: 'USER',
-		email: 'ryan@example.com',
-		avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-		phone: '+84901234571',
-		address: 'Cần Thơ, Việt Nam',
-		achievement: 'SILVER',
-		totalSubmissionPoint: 11200,
-		status: 'ACTIVE',
-		authProvider: 'LOCAL',
-		devices: [],
-		bio: 'Mobile app developer (iOS & Android)'
-	},
-	{
-		id: '6',
-		username: 'EmmaData',
-		role: 'USER',
-		email: 'emma@example.com',
-		avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
-		phone: '+84901234572',
-		address: 'Nha Trang, Việt Nam',
-		achievement: 'SILVER',
-		totalSubmissionPoint: 10800,
-		status: 'ACTIVE',
-		authProvider: 'GOOGLE',
-		devices: [],
-		bio: 'Data scientist & analytics expert'
-	},
-	{
-		id: '7',
-		username: 'TomBackend',
-		role: 'USER',
-		email: 'tom@example.com',
-		avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face',
-		phone: '+84901234573',
-		address: 'Huế, Việt Nam',
-		achievement: 'BRONZE',
-		totalSubmissionPoint: 9500,
-		status: 'ACTIVE',
-		authProvider: 'LOCAL',
-		devices: [],
-		bio: 'Backend developer & API architect'
-	},
-	{
-		id: '8',
-		username: 'LisaDesign',
-		role: 'USER',
-		email: 'lisa@example.com',
-		avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face',
-		phone: '+84901234574',
-		address: 'Vũng Tàu, Việt Nam',
-		achievement: 'BRONZE',
-		totalSubmissionPoint: 8750,
-		status: 'ACTIVE',
-		authProvider: 'FACEBOOK',
-		devices: [],
-		bio: 'UI/UX designer & creative director'
-	}
-];
-
 const getAchievementColor = (achievement: keyof typeof ACHIEVEMENT) => {
 	switch (achievement) {
-		case 'DIAMOND': return 'text-slate-700';
-		case 'PLATINUM': return 'text-slate-600';
-		case 'GOLD': return 'text-amber-600';
-		case 'SILVER': return 'text-gray-500';
-		case 'BRONZE': return 'text-amber-700';
+		case 'EXPERT': return 'text-slate-700';
+		case 'INTERMEDIATE': return 'text-slate-600';
+		case 'BEGINNER': return 'text-amber-600';
 		default: return 'text-gray-400';
 	}
 };
 
 const getAchievementIcon = (achievement: keyof typeof ACHIEVEMENT) => {
 	switch (achievement) {
-		case 'DIAMOND': return Crown;
-		case 'PLATINUM': return Star;
-		case 'GOLD': return Trophy;
-		case 'SILVER': return Medal;
-		case 'BRONZE': return Award;
+		case 'EXPERT': return Crown;
+		case 'INTERMEDIATE': return Star;
+		case 'BEGINNER': return Trophy;
 		default: return Award;
 	}
-};
-
-const formatPoints = (points: number) => {
-	return points.toLocaleString('vi-VN');
 };
 
 // Elegant Medal Component with sophisticated design
@@ -279,8 +103,9 @@ const ElegantMedal = ({ rank, className = "" }: { rank: number; className?: stri
 	);
 };
 
-export default function RankingPage() {
-	const sortedUsers = [...mockUsers].sort((a, b) => b.totalSubmissionPoint - a.totalSubmissionPoint);
+export default async function RankingPage() {
+	const users = await UserService.getRankList();
+	const sortedUsers = users.sort((a, b) => b.totalSubmissionPoint - a.totalSubmissionPoint);
 	const topThree = sortedUsers.slice(0, 3);
 
 	const renderHeader = () => {
@@ -319,7 +144,7 @@ export default function RankingPage() {
 									})}
 									<span className="text-xs font-medium text-slate-600">{topThree[1].achievement}</span>
 								</div>
-								<div className="text-xl font-semibold text-slate-900">{formatPoints(topThree[1].totalSubmissionPoint)}</div>
+								<div className="text-xl font-semibold text-slate-900">{topThree[1].totalSubmissionPoint}</div>
 								<div className="text-xs text-slate-500 mt-1">points</div>
 							</div>
 							<div className="flex flex-col items-center mt-4">
@@ -346,7 +171,7 @@ export default function RankingPage() {
 									})}
 									<span className="text-sm font-medium text-slate-600">{topThree[0].achievement}</span>
 								</div>
-								<div className="text-2xl font-semibold text-slate-900">{formatPoints(topThree[0].totalSubmissionPoint)}</div>
+								<div className="text-2xl font-semibold text-slate-900">{topThree[0].totalSubmissionPoint}</div>
 								<div className="text-xs text-slate-500 mt-1">points</div>
 							</div>
 							<div className="flex flex-col items-center mt-6">
@@ -373,7 +198,7 @@ export default function RankingPage() {
 									})}
 									<span className="text-xs font-medium text-slate-600">{topThree[2].achievement}</span>
 								</div>
-								<div className="text-xl font-semibold text-slate-900">{formatPoints(topThree[2].totalSubmissionPoint)}</div>
+								<div className="text-xl font-semibold text-slate-900">{topThree[2].totalSubmissionPoint}</div>
 								<div className="text-xs text-slate-500 mt-1">points</div>
 							</div>
 							<div className="flex flex-col items-center mt-4">
@@ -433,7 +258,7 @@ export default function RankingPage() {
 										})}
 										<span className="text-xs font-medium text-slate-600">{user.achievement}</span>
 									</div>
-									<div className="text-lg font-semibold text-slate-900">{formatPoints(user.totalSubmissionPoint)}</div>
+									<div className="text-lg font-semibold text-slate-900">{user.totalSubmissionPoint}</div>
 									<div className="text-xs text-slate-500">points</div>
 								</div>
 							</div>

@@ -76,7 +76,7 @@ export default function CodeControl({
 					variant="outline"
 					onClick={handleRunCode}
 					disabled={isRunning}
-					className={`gap-2 cursor-pointer ${themeClasses.background} ${themeClasses.text} ${themeClasses.border} hover:${themeClasses.mutedBg} disabled:opacity-50`}
+					className={`gap-2 ${themeClasses.background} ${themeClasses.text} ${themeClasses.border} hover:${themeClasses.mutedBg} disabled:opacity-50`}
 				>
 					{isRunning ? (
 						<>
@@ -95,7 +95,7 @@ export default function CodeControl({
 				<Button
 					onClick={handleSubmit}
 					disabled={isSubmitting}
-					className={`gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white border-blue-600 disabled:opacity-50 disabled:bg-blue-600`}
+					className={`gap-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600 disabled:opacity-50 disabled:bg-blue-600`}
 				>
 					{isSubmitting ? (
 						<>
@@ -114,7 +114,7 @@ export default function CodeControl({
 				<Button
 					variant="outline"
 					onClick={handleResetCode}
-					className={`gap-2 cursor-pointer ${themeClasses.background} ${themeClasses.text} ${themeClasses.border} hover:opacity-80`}
+					className={`gap-2 ${themeClasses.background} ${themeClasses.text} ${themeClasses.border} hover:opacity-80`}
 				>
 					<RotateCcw className="h-4 w-4" />
 					<span className={themeClasses.text}>Reset</span>
@@ -124,7 +124,7 @@ export default function CodeControl({
 				<Button
 					variant="outline"
 					onClick={handleDownload}
-					className={`gap-2 cursor-pointer ${themeClasses.background} ${themeClasses.text} ${themeClasses.border} hover:opacity-80`}
+					className={`gap-2 ${themeClasses.background} ${themeClasses.text} ${themeClasses.border} hover:opacity-80`}
 				>
 					<Download className="h-4 w-4" />
 					<span className={themeClasses.text}>Save to file</span>
@@ -134,7 +134,7 @@ export default function CodeControl({
 				<Button
 					variant="ghost"
 					onClick={handleToggleTheme}
-					className={`gap-2 cursor-pointer ${themeClasses.text} hover:${themeClasses.mutedBg}`}
+					className={`gap-2 ${themeClasses.text} hover:${themeClasses.mutedBg}`}
 				>
 					{theme === "vs-dark" ? (
 						<>

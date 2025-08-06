@@ -26,10 +26,16 @@ export interface PostReaction extends BaseObject {
 }
 
 export interface PostComment extends BaseObject {
+  parentId: string;
+  postId: string;
   author: User;
   content: string;
   commentReactions: CommentReaction[];
 }
+
+export type CreatePostCommentRequest = Pick<PostComment, 'content' | 'postId'>;
+
+export type UpdatePostCommentRequest = Partial<CreatePostCommentRequest>;
 
 export interface CommentReaction extends BaseObject {
   author: User;

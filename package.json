@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-react": "^11.0.0",
     "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-dialog": "^1.1.14",
@@ -19,6 +20,7 @@
     "@radix-ui/react-tabs": "^1.1.12",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "embla-carousel-react": "^8.6.0",
     "isomorphic-dompurify": "^2.26.0",
     "lucide-react": "^0.513.0",
     "monaco-editor": "^0.52.2",

@@ -10,7 +10,7 @@ export default function ContentDisplay({ content, className }: ContentDisplayPro
 
 	return (
 		<div
-			className={`${className} prose max-w-none`}
+			className={`${className} prose max-w-none prose-p:break-words prose-headings:break-words prose-a:break-all overflow-hidden`}
 			dangerouslySetInnerHTML={{ __html: cleanHTML }}
 		/>
 	);

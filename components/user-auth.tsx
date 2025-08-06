@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useAuthContext } from "@/contexts/auth-context";
 import { ACHIEVEMENT } from "@/types/user";
 import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const achievementConfig = {
   [ACHIEVEMENT.BEGINNER]: {
@@ -59,7 +60,7 @@ export default function UserAuth() {
         <div className="flex items-center gap-4">
           <Button
             onClick={login}
-            className="cursor-pointer px-8 py-3 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transform hover:scale-105 transition-all duration-200 shadow-lg"
+            className="px-8 py-3 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transform hover:scale-105 transition-all duration-200 shadow-lg"
           >
             {isLoading ? (
               <>
@@ -76,7 +77,7 @@ export default function UserAuth() {
           <Button
             onClick={register}
             variant="outline"
-            className="cursor-pointer px-8 py-3 border-2 border-black text-black hover:bg-gray-50 rounded-lg font-medium transform hover:scale-105 transition-all duration-200"
+            className="px-8 py-3 border-2 border-black text-black hover:bg-gray-50 rounded-lg font-medium transform hover:scale-105 transition-all duration-200"
           >
             Register
           </Button>
@@ -94,17 +95,16 @@ export default function UserAuth() {
         <div className="flex items-center gap-4">
           <div className="relative">
             {user?.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.username}
-                className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
-              />
+              <Avatar className="h-12 w-12 rounded-md flex-shrink-0">
+                <AvatarImage src={user.avatar} alt={user.username} />
+                <AvatarFallback>{user.email}</AvatarFallback>
+              </Avatar>
             ) : (
               <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center">
                 <User className="h-6 w-6 text-white" />
               </div>
             )}
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-black rounded-full border-2 border-white"></div>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-600 rounded-full border-2 border-white"></div>
           </div>
 
           <div className="flex flex-col">
@@ -117,7 +117,7 @@ export default function UserAuth() {
             <div className="flex items-center gap-3 text-sm text-gray-600">
               <div className="flex items-center gap-1">
                 <Trophy className="h-3 w-3" />
-                <span>{user?.totalSubmissionPoint || 0} điểm</span>
+                <span>{user?.totalSubmissionPoint || 0} point</span>
               </div>
               <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
               <span>{user?.email}</span>
@@ -126,7 +126,7 @@ export default function UserAuth() {
         </div>
 
         {/* Notifications */}
-        {/* <Button variant="ghost" size="sm" className="cursor-pointer relative hover:bg-gray-100">
+        {/* <Button variant="ghost" size="sm" className="relative hover:bg-gray-100">
           <Bell className="h-5 w-5 text-gray-600" />
           <div className="absolute -top-1 -right-1 w-3 h-3 bg-black rounded-full"></div>
         </Button> */}
@@ -134,7 +134,7 @@ export default function UserAuth() {
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="cursor-pointer p-2 hover:bg-gray-100">
+            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100">
               <Settings className="h-5 w-5 text-gray-600" />
             </Button>
           </DropdownMenuTrigger>
@@ -144,12 +144,12 @@ export default function UserAuth() {
               <p className="text-xs text-gray-500">{user?.email}</p>
             </div>
 
-            <DropdownMenuItem asChild>
+            {/* <DropdownMenuItem asChild>
               <Link href="/profile" className="cursor-pointer flex items-center gap-2">
                 <User className="h-4 w-4" />
                 Profile
               </Link>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
 
             {/* <DropdownMenuItem asChild>
               <Link href="/problems" className="cursor-pointer flex items-center gap-2">

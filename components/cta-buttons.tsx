@@ -45,7 +45,7 @@ export default function CTAButtons({ buttons }: CTAButtonProps) {
 				const config = buttonMap[btn.type];
 				return (
 					<Link key={btn.type} href={config.href}>
-						<Button variant={config.varient ? config.varient : 'default'} className={`${config.className} cursor-pointer`}>
+						<Button variant={config.varient ? config.varient : 'default'} className={`${config.className}`}>
 							<div className="flex items-center gap-3">
 								{config.icon}
 								{config.label}

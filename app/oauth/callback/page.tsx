@@ -1,5 +1,6 @@
 'use client'
 import LoadingOverlay from "@/components/loading";
+import { Button } from "@/components/ui/button";
 import { useAuthCallBack } from "@/contexts/auth-context";
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react";
@@ -48,12 +49,12 @@ export default function OAuthCallbackPage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Login Failed</h2>
           <p className="text-gray-600 mb-6">{error}</p>
-          <button
+          <Button
             onClick={() => router.push('/login')}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           >
             Back to login page
-          </button>
+          </Button>
         </div>
       </div>
     );

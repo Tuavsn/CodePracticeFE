@@ -1,43 +1,43 @@
-import { Problem } from "@/types/problem";
+import { Post } from "@/types/post";
 import { create } from "zustand";
 
-interface ProblemState {
+interface PostState {
     isOpen: boolean;
     mode: 'create' | 'update';
-    editingProblem: Problem | null;
+    editingPost: Post | null;
 }
 
-interface ProblemAction {
+interface PostAction {
     openCreateModal: () => void;
-    openEditModal: (problem: Problem) => void;
+    openEditModal: (post: Post) => void;
     closeModal: () => void;
     setMode: (mode: 'create' | 'update') => void;
 }
 
-type ProblemStore = ProblemState & ProblemAction;
+type PostStore = PostState & PostAction;
 
-const initialState: ProblemState = {
+const initialState: PostState = {
     isOpen: false,
     mode: 'create',
-    editingProblem: null,
+    editingPost: null,
 }
 
-export const useProblemContext = create<ProblemStore>()(
-    (set) => ({
+export const usePostContext = create<PostStore>()(
+    (set, get) => ({
         ...initialState,
         openCreateModal: () => set({
             isOpen: true,
             mode: 'create',
-            editingProblem: null
+            editingPost: null
         }),
-        openEditModal: (problem: Problem) => set({
+        openEditModal: (post: Post) => set({
             isOpen: true,
             mode: 'update',
-            editingProblem: problem
+            editingPost: post
         }),
         closeModal: () => set({
             ...initialState
         }),
         setMode: (mode: 'create' | 'update') => set({ mode })
     })
-);
+)

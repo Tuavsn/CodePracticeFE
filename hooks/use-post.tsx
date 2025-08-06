@@ -1,6 +1,10 @@
+import { usePostContext } from "@/contexts/post-context";
 import { PostService } from "@/lib/services/post.service";
+import { stringToSlug } from "@/lib/string-utils";
 import { CreatePostRequest, Post, UpdatePostRequest } from "@/types/post";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface PostFormData {
 	title: string;
@@ -22,6 +26,25 @@ export function usePost() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [formData, setFormData] = useState<PostFormData>(initialFormData);
+	const router = useRouter();
+
+	const { mode, editingPost, closeModal } = usePostContext();
+
+	useEffect(() => {
+		if (mode === 'update' && editingPost) {
+			setFormData({
+				title: editingPost.title,
+				content: editingPost.content,
+				thumbnail: editingPost.thumbnail || "",
+				topics: Array.isArray(editingPost.topics)
+					? editingPost.topics.join(', ')
+					: editingPost.topics || "",
+				images: editingPost.images || []
+			})
+		} else if (mode === 'create') {
+			handleResetFormData();
+		}
+	}, [mode, editingPost])
 
 	const handleFormDataChange = (field: keyof PostFormData, value: string) => {
 		setFormData(prev => ({ ...prev, [field]: value }));
@@ -88,7 +111,7 @@ export function usePost() {
 		input.multiple = true;
 		input.onchange = async (e) => {
 			const files = Array.from((e.target as HTMLInputElement).files || []);
-			
+
 			if (files.length === 0) return;
 
 			// Validate all files first
@@ -131,12 +154,17 @@ export function usePost() {
 	const handleCreatePost = async (request: CreatePostRequest) => {
 		setIsLoading(true);
 		setError(null);
+
 		try {
 			const response = await PostService.createPost(request);
+			toast.success("Post created successfully");
+			handleResetFormData();
+			closeModal();
 			return response;
 		} catch (error) {
 			const errMsg = error instanceof Error ? error.message : "Failed to create post";
 			setError(errMsg);
+			toast.error(errMsg);
 			throw error;
 		} finally {
 			setIsLoading(false);
@@ -146,12 +174,17 @@ export function usePost() {
 	const handleUpdatePost = async (id: string, request: UpdatePostRequest) => {
 		setIsLoading(true);
 		setError(null);
+
 		try {
 			const response = await PostService.updatePost(id, request);
+			toast.success("Post updated successfully");
+			handleResetFormData();
+			closeModal();
 			return response;
 		} catch (error) {
 			const errMsg = error instanceof Error ? error.message : "Failed to update post";
 			setError(errMsg);
+			toast.error(errMsg);
 			throw error;
 		} finally {
 			setIsLoading(false);
@@ -161,14 +194,84 @@ export function usePost() {
 	const handleDeletePost = async (postId: string) => {
 		setIsLoading(true);
 		setError(null);
+
 		try {
 			await PostService.deletePost(postId);
+			toast.success("Post deleted successfully");
+			router.refresh();
 		} catch (error) {
 			const errMsg = error instanceof Error ? error.message : "Failed to delete post";
 			setError(errMsg);
+			toast.error(errMsg);
 			throw error;
 		} finally {
 			setIsLoading(false);
+		}
+	}
+
+	const handleCopyLink = (post: Post) => {
+		if (!post.id && !post.title) return;
+		try {
+			const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+			const link = `${baseUrl}/posts/${stringToSlug(post.title)}-${post.id}`;
+			navigator.clipboard.writeText(link);
+			clearError();
+		} catch (error) {
+			const errMsg = error instanceof Error ? error.message : "Failed to copy link";
+			setError(errMsg);
+			throw error;
+		}
+	}
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+
+		if (!formData.title.trim() || !formData.content.trim()) {
+			toast.error("Please enter post title and post content");
+			return;
+		}
+
+		try {
+			const request = {
+				title: formData.title.trim(),
+				content: formData.content.trim(),
+				thumbnail: formData.thumbnail.trim(),
+				images: formData.images,
+				topics: formData.topics.split(',').map(topic => topic.trim()).filter(topic => topic)
+			};
+
+			if (mode === 'create') {
+				await handleCreatePost(request as CreatePostRequest);
+			} else if (mode === 'update' && editingPost?.id) {
+				await handleUpdatePost(editingPost.id, request as UpdatePostRequest);
+			}
+			router.refresh();
+		} catch (error) {
+			toast.error(mode === 'create' ? 'Create failed' : 'Update failed')
+		}
+	}
+
+	const handleLikePost = (postId: string) => {
+		// TODO
+		setIsLoading(true);
+		setError(null);
+
+		try {
+
+		} catch (error) {
+
+		}
+	}
+
+	const handleDislikePost = () => {
+		// TODO
+		setIsLoading(true);
+		setError(null);
+
+		try {
+
+		} catch (error) {
+
 		}
 	}
 
@@ -183,7 +286,6 @@ export function usePost() {
 	return {
 		// states
 		formData,
-		setFormData,
 		isLoading,
 		error,
 		// actions
@@ -197,6 +299,10 @@ export function usePost() {
 		handleUpdatePost,
 		handleDeletePost,
 		handleResetPost,
+		handleLikePost,
+		handleDislikePost,
+		handleSubmit,
+		handleCopyLink,
 		clearError
 	}
 }
