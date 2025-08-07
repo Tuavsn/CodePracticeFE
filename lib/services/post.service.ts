@@ -1,60 +1,132 @@
-import { CreatePostRequest, Post, UpdatePostRequest } from "@/types/post";
-import { apiClient } from "../api/api-client";
+import { CreatePostCommentRequest, CreatePostRequest, Post, PostComment, PostReaction, UpdatePostCommentRequest, UpdatePostRequest } from "@/types/post";
+import { apiClient, PaginationData, PaginationParams } from "../api/api-client";
 import { API_CONFIG } from "../api/api-config";
+import { CommentReaction } from "@/types/problem";
+
 
 export const PostService = {
-  getPosts: async (): Promise<Post[]> => {
+  //================================ Post =======================================
+  getPosts: async (params: PaginationParams = {}): Promise<PaginationData<Post[]> & {
+      hasNext: boolean;
+      hasPrevious: boolean;
+      getNextPageParams: () => URLSearchParams | null;
+      getPreveviousPageParams: () => URLSearchParams | null;
+    }> => {
     try {
-      console.log("Fetching posts with url:" + API_CONFIG.API_END_POINT.POST)
-      const response = await apiClient.get<Post[]>(
-        `${API_CONFIG.API_END_POINT.POST}`,
-        // {
-        //   cache: true,
-        //   cacheTTL: 5 * 60 * 1000
-        // }
-      );
+      const { page = 0, size = 2, sort = "createdAt, DESC", ...filters } = params;
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        sort: sort,
+        ...Object.entries(filters).reduce((acc, [key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            acc[key] = value.toString();
+          };
+          return acc;
+        }, {} as Record<string, string>)
+      })
+      const url = `${API_CONFIG.API_END_POINT.POST}?${queryParams.toString()}`;
+      console.log('Fetching posts with url: ' + url)
+      const response = await apiClient.getWithPaginated<Post[]>(url);
       return response;
     } catch (error) {
       throw error
     }
   },
-  getPostById: async (id: string): Promise<Post> => {
+  getPostById: async (postId: string): Promise<Post> => {
     try {
-      console.log(`Fetching post with id: ${id} ` + API_CONFIG.API_END_POINT.POST);
-      const response = await apiClient.get<Post>(
-        `${API_CONFIG.API_END_POINT.POST}/${id}`,
-        // {
-        //   cache: true,
-        //   cacheTTL: 10 * 60 * 1000
-        // }
-      );
+      const url = `${API_CONFIG.API_END_POINT.POST}/${postId}`;
+      console.log('Fetching post with url: ' + url);
+      const response = await apiClient.get<Post>(url);
       return response;
     } catch (error) {
       throw error
     }
   },
-  createPost: async(request: CreatePostRequest): Promise<Post> => {
+  createPost: async (request: CreatePostRequest): Promise<Post> => {
     try {
-      console.log(`Create post: ${JSON.stringify(request)}` + API_CONFIG.API_END_POINT.POST);
-      const response = await apiClient.post<Post>(`${API_CONFIG.API_END_POINT.POST}`, request);
+      const url = API_CONFIG.API_END_POINT.POST;
+      console.log('Create post with url: ' + url);
+      const response = await apiClient.post<Post>(url, request);
       return response;
     } catch (error) {
       throw error;
     }
   },
-  updatePost: async(id: string, request: UpdatePostRequest): Promise<Post> => {
+  updatePost: async (postId: string, request: UpdatePostRequest): Promise<Post> => {
     try {
-      console.log(`Update post: ${JSON.stringify(request)} with id: ${id}` + API_CONFIG.API_END_POINT.POST);
-      const response = await apiClient.put<Post>(`${API_CONFIG.API_END_POINT.POST}/${id}`, request);
+      const url = `${API_CONFIG.API_END_POINT.POST}/${postId}`;
+      console.log('Update post with url: ' + url);
+      const response = await apiClient.put<Post>(url, request);
       return response;
     } catch (error) {
       throw error;
     }
   },
-  deletePost: async(id: string): Promise<void> => {
+  deletePost: async (postId: string): Promise<void> => {
     try {
-      console.log(`Delete post with id: ${id}` + API_CONFIG.API_END_POINT.POST);
-      await apiClient.delete(`${API_CONFIG.API_END_POINT.POST}/${id}`);
+      const url = `${API_CONFIG.API_END_POINT.POST}/${postId}`;
+      console.log('Delete post with url: ' + url);
+      await apiClient.delete(url);
+    } catch (error) {
+      throw error;
+    }
+  },
+  //================================ Comment =======================================
+  getCommentsByPostId: async (postId: string): Promise<PostComment[]> => {
+    try {
+      const url = `${API_CONFIG.API_END_POINT.POST}/${postId}/comments`;
+      console.log('Fetching all comments with url: ' + url);
+      const response = await apiClient.get<PostComment[]>(url);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+  createPostComment: async (postId: string, request: CreatePostCommentRequest): Promise<PostComment> => {
+    try {
+      const url = `${API_CONFIG.API_END_POINT.POST}/${postId}/comments`;
+      console.log('Create post comment with url: ' + url);
+      const response = await apiClient.post<PostComment>(url, request);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+  updatePostComment: async (postId: string, commentId: string, request: UpdatePostCommentRequest): Promise<PostComment> => {
+    try {
+      const url = `${API_CONFIG.API_END_POINT.POST}/${postId}/comments/${commentId}`;
+      console.log('Update post comment with url: ' + url);
+      const response = await apiClient.post<PostComment>(url, request);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+  deletePostComment: async (postId: string, commentId: string): Promise<void> => {
+    try {
+      const url = `${API_CONFIG.API_END_POINT.POST}/${postId}/comments/${commentId}`;
+      console.log('Delete post with url: ' + url);
+      await apiClient.delete(url);
+    } catch (error) {
+      throw error;
+    }
+  },
+  //================================ Reaction =======================================
+  reactionPost: async (postId: string, type: PostReaction): Promise<void> => {
+    try {
+      const url = `${API_CONFIG.API_END_POINT.POST}/${postId}/reactions?${type}`;
+      console.log(`${type} post with url: ` + url);
+      await apiClient.post<Post>(url)
+    } catch (error) {
+      throw error;
+    }
+  },
+  reactionComment: async (postId: string, commentId: string, type: CommentReaction): Promise<void> => {
+    // TODO
+    try {
+      const url = `${API_CONFIG.API_END_POINT.POST}/${postId}/comments/${commentId}/reactions?`;
+      console.log(`${type} comment with url: ` + url);
     } catch (error) {
       throw error;
     }

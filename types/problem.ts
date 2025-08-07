@@ -4,19 +4,19 @@ import { User } from "./user";
 export interface Problem extends BaseObject {
   title: string;
   description: string;
-  difficulty: (keyof typeof PROBLEM_COMPLEXITY);
   tags: string[];
-  author: User;
-  reactionCount: number;
-  commentCount: number;
-  submissionCount: number;
-  acceptanceRate: number;
-  isLiked?: boolean;
-  isSolved?: boolean;
   constraints: string[];
   examples: ProblemExample[];
   codeTemplates: ProblemCodeTemplate[];
   hints: string[];
+  difficulty: (keyof typeof PROBLEM_COMPLEXITY);
+  reactionCount: number;
+  commentCount: number;
+  totalSubmissions: number;
+  totalAcceptedSubmissions: number;
+  timeLimitSeconds: number;
+  memoryLimitMb: number;
+  totalScore: number;
   status?: (keyof typeof PROBLEM_STATUS);
   isSelected?: boolean;
 }

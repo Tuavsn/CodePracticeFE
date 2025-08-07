@@ -5,10 +5,25 @@ import ContainerLayout from "@/components/layout/container-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProblemGrid from "@/components/problems/problem-gird";
 import { ProblemService } from "@/lib/services/problem.service";
+import DataPagination from "@/components/pagination";
 
-export default async function ProblemPage() {
-  // Fetch problems
-  const problems = await ProblemService.getProblems();
+export default async function ProblemPage({
+  searchParams
+}: { searchParams: Promise<{ page?: string }> }) {
+
+  const resolvedSearchParams = await searchParams;
+
+  const currentPage = parseInt(resolvedSearchParams.page || '1') - 1;
+
+  const paginatedProblems = await ProblemService.getProblems({ page: currentPage });
+
+  const totalPage = paginatedProblems.totalPages;
+
+  const totalItem = paginatedProblems.totalElements;
+
+  const pageSize = paginatedProblems.size;
+
+  const problems = paginatedProblems.content;
 
   const ctaButtons: { type: CTAButtonsType }[] = [
     { type: 'post' },
@@ -140,6 +155,17 @@ export default async function ProblemPage() {
 
       {/* Problem grid */}
       <ProblemGrid problems={problems} />
+
+      {/* Pagination */}
+      <DataPagination
+        totalPage={totalPage}
+        totalItems={totalItem}
+        pageSize={pageSize}
+        maxVisiblePages={5}
+        showPageInfo={true}
+        showItemsCount={true}
+        className="my-4"
+      />
 
     </ContainerLayout>
   )

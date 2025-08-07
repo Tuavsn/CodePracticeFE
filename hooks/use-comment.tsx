@@ -3,7 +3,8 @@ import { CreateProblemCommentRequest, ProblemComment, UpdateProblemCommentReques
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { CommentService } from "@/lib/services/comment.service";
+import { PostService } from "@/lib/services/post.service";
+import { ProblemService } from "@/lib/services/problem.service";
 
 interface CommentFormData {
 	content: string;
@@ -65,8 +66,8 @@ export function useComment({
 
 		try {
 			const response = ("postId" in request)
-			  ? await CommentService.createPostComment(request)
-			  : await CommentService.createProblemComemnt(request);
+			  ? await PostService.createPostComment(request.postId, request)
+			  : await ProblemService.createProblemComment(request.problemId, request);
 
 			toast.success("Comment created successfully");
 			handleResetFormData();
@@ -88,8 +89,8 @@ export function useComment({
 
 		try {
 			const response = ("postId" in request)
-			  ? await CommentService.updatePostComment(id, request)
-			  : await CommentService.updateProblemComment(id, request);
+			  ? await PostService.updatePostComment((request as UpdatePostCommentRequest).postId!, id, request)
+			  : await ProblemService.updateProblemComment((request as UpdateProblemCommentRequest).problemId!, id, request);
 			toast.success("Comment updated successfully");
 			handleResetFormData();
 			router.refresh();
@@ -109,7 +110,7 @@ export function useComment({
 		setError(null);
 
 		try {
-			target === 'post' ? await CommentService.deletePostComment(id) : await CommentService.deleteProblemComment(id);
+			target === 'post' ? await PostService.deletePostComment('',id) : await ProblemService.deleteProblemComment('',id);
 			toast.success("Comment deleted successfully");
 			router.refresh();
 		} catch (error) {

@@ -87,10 +87,11 @@ export default async function ProblemDetailPage({
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    {/* TODO */}
+                    {/* <Button variant="outline" size="sm">
                       <Share className="h-4 w-4 mr-2" />
-                      Share
-                    </Button>
+                      Copy Link
+                    </Button> */}
                     <Link href={`/problems/solve/${stringToSlug(problem.title)}-${problemId}`}>
                       <Button>
                         <Play className="h-4 w-4 mr-1" />
@@ -169,11 +170,11 @@ export default async function ProblemDetailPage({
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <div className="text-xs text-muted-foreground">Solved</div>
-                  <div className="text-lg font-bold text-blue-400">2.8M</div>
+                  <div className="text-lg font-bold text-blue-400">{problem.totalSubmissions}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-xs text-muted-foreground">Acceptance</div>
-                  <div className="text-lg font-bold text-red-400">49.1%</div>
+                  <div className="text-lg font-bold text-red-400">{problem.totalAcceptedSubmissions}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-xs text-muted-foreground mb-1">Difficulty</div>
@@ -182,6 +183,21 @@ export default async function ProblemDetailPage({
                   </Badge>
                 </div>
                 <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Time Limit</div>
+                  <div className="text-sm font-semibold text-gray-800">{problem.timeLimitSeconds} s 🕐</div>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Memory Limit</div>
+                  <div className="text-sm font-semibold text-gray-800">{problem.memoryLimitMb} MB 💾</div>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground">Score</div>
+                  <div className="text-sm font-semibold text-yellow-600">{problem.totalScore}</div>
+                </div>
+                {/* TODO */}
+                {/* <div className="text-center">
                   <div className="text-xs text-muted-foreground mb-1">Rating</div>
                   <div className="flex justify-center items-center gap-2">
                     <div className="flex items-center gap-1">
@@ -193,12 +209,13 @@ export default async function ProblemDetailPage({
                       <span className="text-xs">1.4K</span>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </CardContent>
             </Card>
 
             {/* Related Problems - Now below stats */}
-            <Card className="rounded-lg shadow-2xl">
+            {/* TODO */}
+            {/* <Card className="rounded-lg shadow-2xl">
               <CardHeader>
                 <CardTitle>Related Problems</CardTitle>
               </CardHeader>
@@ -216,7 +233,7 @@ export default async function ProblemDetailPage({
                   <div className="text-sm text-muted-foreground">Hard</div>
                 </Link>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
       </div>

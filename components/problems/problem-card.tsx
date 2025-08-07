@@ -62,11 +62,11 @@ export default function ProblemCard({
 				<div className="grid grid-cols-2 gap-3 mb-4 text-sm">
 					<div className="flex items-center text-muted-foreground">
 						<Users className="h-4 w-4 mr-1.5 text-blue-500" />
-						<span className="font-medium">{problem.submissionCount?.toLocaleString()}</span>
+						<span className="font-medium">{problem.totalSubmissions?.toLocaleString()}</span>
 					</div>
 					<div className="flex items-center text-muted-foreground">
 						<TrendingUp className="h-4 w-4 mr-1.5 text-green-500" />
-						<span className="font-medium">{problem.acceptanceRate}%</span>
+						<span className="font-medium">{problem.totalAcceptedSubmissions}%</span>
 					</div>
 				</div>
 
@@ -82,7 +82,8 @@ export default function ProblemCard({
 				{/* Action buttons - pushed to bottom */}
 				<div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800 mt-auto">
 					<div className="flex items-center space-x-2">
-						<Button
+						{/* TODO */}
+						{/* <Button
 							variant="ghost"
 							size="sm"
 							className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-2"
@@ -101,7 +102,7 @@ export default function ProblemCard({
 								<MessageCircle className="h-4 w-4 mr-1" />
 								<span className="text-xs">{problem.commentCount}</span>
 							</Link>
-						</Button>
+						</Button> */}
 					</div>
 
 					<Button
@@ -111,7 +112,7 @@ export default function ProblemCard({
 					>
 						<Link href={`/problems/${problem.id}/solve`}>
 							<Clock className="h-4 w-4 mr-1.5" />
-							Giải
+							Solve
 						</Link>
 					</Button>
 				</div>

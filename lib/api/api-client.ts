@@ -8,8 +8,47 @@ export interface ApiRequestOptions {
   retries?: number;
   cache?: boolean;
   cacheTTL?: number;
-  rawRespone?: boolean;
+  rawResponse?: boolean;
   accessToken?: string;
+}
+
+// Pageable
+export interface Pageable {
+  pageNumber: number;
+  pageSize: number;
+  sort: Array<{
+    direction: 'ASC' | 'DESC';
+    property: string;
+    ignoreCase: boolean;
+    nullHandling: string;
+    descending: boolean;
+    ascending: boolean;
+  }>
+  offset: number;
+  paged: boolean;
+  unpaged: boolean;
+}
+
+// Pagination Data
+export interface PaginationData<T> {
+  content: T;
+  pageable: Pageable;
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  numberOfElements: number;
+  size: number;
+  number: number;
+  sort: Array<{
+    direction: 'ASC' | 'DESC';
+    property: string;
+    ignoreCase: boolean;
+    nullHandling: string;
+    descending: boolean;
+    ascending: boolean;
+  }>;
+  first: boolean;
+  empty: boolean;
 }
 
 // Api Response From Server
@@ -17,13 +56,14 @@ export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
   data: T;
-  errors?: string[];
+  errors?: string[] | null;
   timestamp?: string;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-  }
+}
+
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  [key: string]: any; // For additional filters
 }
 
 class ApiClient {
@@ -118,11 +158,11 @@ class ApiClient {
   /**
    * Validate Reponse data
    * @param responseData 
-   * @param rawRespone 
+   * @param rawResponse 
    * @returns T
    */
-  private processResponse<T>(responseData: any, rawRespone: boolean = false): T {
-    if (rawRespone) {
+  private processResponse<T>(responseData: any, rawResponse: boolean = false): T {
+    if (rawResponse) {
       return responseData as T;
     }
     // If Error
@@ -251,7 +291,7 @@ class ApiClient {
       retries = API_CONFIG.RETRY.MAX_ATTEMPTS,
       cache = false,
       cacheTTL = API_CONFIG.CACHE_TTL.PLACES,
-      rawRespone = false,
+      rawResponse = false,
       accessToken,
       ...fetchOptions
     } = options
@@ -317,6 +357,35 @@ class ApiClient {
   // Http method
   async get<T>(endpoint: string, options?: ApiRequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "GET" });
+  }
+
+  async getWithPaginated<T>(endpoint: string, options?: ApiRequestOptions): Promise<PaginationData<T> & {
+    hasNext: boolean;
+    hasPrevious: boolean;
+    getNextPageParams: () => URLSearchParams | null;
+    getPreveviousPageParams: () => URLSearchParams | null;
+  }> {
+    const data = await this.get<PaginationData<T>>(endpoint, options);
+
+    return {
+      ...data,
+      hasNext: !data.last,
+      hasPrevious: !data.first,
+      getNextPageParams: () => {
+        if (data.last) return null;
+        const params = new URLSearchParams();
+        params.set('page', (data.number + 1).toString());
+        params.set('size', data.size.toString());
+        return params;
+      },
+      getPreveviousPageParams: () => {
+        if (data.first) return null;
+        const params = new URLSearchParams();
+        params.set('page', (data.number - 1).toString());
+        params.set('size', data.size.toString());
+        return params;
+      }
+    }
   }
 
   async post<T>(endpoint: string, data?: any, options?: ApiRequestOptions): Promise<T> {
