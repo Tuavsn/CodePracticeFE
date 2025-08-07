@@ -1,11 +1,29 @@
-import PostList from "@/components/posts/post-list";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, TrendingUp, Users } from "lucide-react";
 import CTAButtons, { CTAButtonsType } from "@/components/cta-buttons";
 import ContainerLayout from "@/components/layout/container-layout";
+import { PostService } from "@/lib/services/post.service";
+import PostList from "@/components/posts/post-list";
+import DataPagination from "@/components/pagination";
 
-export default function PostPage() {
+export default async function PostPage({
+  searchParams
+}: { searchParams: Promise<{ page?: string }> }) {
+
+  const resolvedSearchParams = await searchParams;
+
+  const currentPage = parseInt(resolvedSearchParams.page || '1') - 1;
+
+  const paginatedPosts = await PostService.getPosts({ page: currentPage });
+
+  const totalPage = paginatedPosts.totalPages;
+
+  const totalItem = paginatedPosts.totalElements;
+
+  const pageSize = paginatedPosts.size;
+
+  const posts = paginatedPosts.content;
 
   const ctaButtons: { type: CTAButtonsType }[] = [
     { type: 'code' },
@@ -94,7 +112,18 @@ export default function PostPage() {
       {renderBreadCrumb()}
 
       {/* Post list */}
-      <PostList />
+      <PostList posts={posts} />
+
+      {/* Pagination */}
+      <DataPagination
+        totalPage={totalPage}
+        totalItems={totalItem}
+        pageSize={pageSize}
+        maxVisiblePages={5}
+        showPageInfo={true}
+        showItemsCount={true}
+        className="my-4"
+      />
 
     </ContainerLayout>
   )

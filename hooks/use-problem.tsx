@@ -2,6 +2,7 @@ import { ProblemService } from "@/lib/services/problem.service";
 import { CreateProblemRequest, Problem, UpdateProblemRequest, ProblemExample, ProblemCodeTemplate, PROBLEM_COMPLEXITY, DEFAULT_CODE_BASE } from "@/types/problem";
 import { SubmissionLanguage } from "@/types/global";
 import { useState } from "react";
+import { stringToSlug } from "@/lib/string-utils";
 
 interface ProblemFormData {
 	title: string;
@@ -176,6 +177,20 @@ export function useProblem() {
 		setError(null);
 	}
 
+	const handleCopyLink = (problem: Problem) => {
+		if (!problem.id && !problem.title) return;
+		try {
+			const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+			const link = `${baseUrl}/problems/${stringToSlug(problem.title)}-${problem.id}`;
+			navigator.clipboard.writeText(link);
+			clearError();
+		} catch (error) {
+			const errMsg = error instanceof Error ? error.message : "Failed to copy link";
+			setError(errMsg);
+			throw error;
+		}
+	}
+
 	return {
 		// states
 		formData,
@@ -199,6 +214,7 @@ export function useProblem() {
 		handleUpdateProblem,
 		handleDeleteProblem,
 		handleResetProblem,
+		handleCopyLink,
 		clearError
 	}
 }

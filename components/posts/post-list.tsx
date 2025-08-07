@@ -1,14 +1,13 @@
 import PostCard from "./post-card";
 import { Card, CardContent } from "../ui/card";
-import { PostService } from "@/lib/services/post.service";
 import PostCreateSection from "./post-create-section";
+import { Post } from "@/types/post";
 
-export default async function PostList() {
+interface PostListProps {
+  posts: Post[];
+}
 
-  const posts = await PostService.getPosts();
-
-  await posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  
+export default function PostList({ posts }: PostListProps) {
   return (
     <>
       <PostCreateSection />

@@ -19,8 +19,8 @@ export default function PostCard({
   post,
 }: PostCardProps) {
 
-  return (
-    <Card className="border-0 rounded-none shadow-none gap-1 hover:bg-gray-70/30 hover:shadow-sm transition-all duration-200 group cursor-pointer relative overflow-hidden">
+  const renderPostHeader = () => {
+    return (
       <CardHeader className="pb-3">
         <CardTitle>
           <div className="flex items-center space-x-3 min-w-0">
@@ -32,8 +32,8 @@ export default function PostCard({
             <div className="min-w-0 flex-1">
               <div className="flex items-center space-x-2 py-1 min-w-0">
                 {/* Username */}
-                <Link 
-                  href={`/profile/${post.author.id}`} 
+                <Link
+                  href={`/profile/${post.author.id}`}
                   className="font-semibold hover:underline hover:text-[#0476D0] truncate"
                 >
                   {post.author.username}
@@ -57,8 +57,11 @@ export default function PostCard({
           <PostCardHeaderActions post={post} />
         </CardAction>
       </CardHeader>
-      
-      {/* Content */}
+    )
+  }
+
+  const renderPostContent = () => {
+    return (
       <CardContent className="pb-3">
         {/* Post content with image layout */}
         <div className={`${post.thumbnail ? 'md:flex md:gap-4 md:items-start' : ''} min-w-0`}>
@@ -70,15 +73,15 @@ export default function PostCard({
                 {post.title}
               </h2>
             </Link>
-            
+
             {/* Post content */}
             <div className="mb-3">
-              <ContentDisplay 
-                className="text-muted-foreground line-clamp-4" 
-                content={post.content} 
+              <ContentDisplay
+                className="text-muted-foreground line-clamp-4"
+                content={post.content}
               />
             </div>
-            
+
             {/* Topics */}
             <div className="flex flex-wrap gap-2">
               {post.topics.map((topic, index) => (
@@ -88,7 +91,7 @@ export default function PostCard({
               ))}
             </div>
           </div>
-          
+
           {/* Image - fixed size, shows full image */}
           {post.thumbnail && (
             <div className="mt-3 md:mt-0 md:w-64 md:h-48 md:flex-shrink-0">
@@ -107,11 +110,27 @@ export default function PostCard({
           )}
         </div>
       </CardContent>
-      
-      {/* Card Footer Actions */}
+    )
+  }
+
+  const renderPostFooter = () => {
+    return (
       <CardFooter className="pt-0">
         <PostCardFooterActions post={post} />
       </CardFooter>
+    )
+  }
+
+  return (
+    <Card className="border-0 rounded-none shadow-none gap-1 hover:bg-gray-70/30 hover:shadow-sm transition-all duration-200 group cursor-pointer relative overflow-hidden">
+      {/* Post header */}
+      {renderPostHeader()}
+
+      {/* Post Content */}
+      {renderPostContent()}
+
+      {/* Card Footer Actions */}
+      {renderPostFooter()}
     </Card>
   )
 }

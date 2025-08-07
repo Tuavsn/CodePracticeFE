@@ -1,8 +1,8 @@
 import { Card } from "../ui/card";
 import CommentCard from "./comment-card";
 import { MessageCircle } from "lucide-react";
-import { CommentService } from "@/lib/services/comment.service";
 import CommentInput from "./comment-input";
+import { PostService } from "@/lib/services/post.service";
 
 interface CommentListProps {
   postId: string;
@@ -10,7 +10,7 @@ interface CommentListProps {
 
 export default async function CommentList({ postId }: CommentListProps) {
 
-  const comments = await CommentService.getCommentsByPostId(postId);
+  const comments = await PostService.getCommentsByPostId(postId);
 
   const sortedComments = comments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
