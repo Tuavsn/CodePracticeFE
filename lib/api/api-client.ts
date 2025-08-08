@@ -1,7 +1,6 @@
 import { ApiError, BusinessError, NetworkError, ResponseValidationError, TimeoutError } from "../error-handling";
 import { API_CONFIG } from "./api-config";
 
-// Request options
 export interface ApiRequestOptions {
   headers?: HeadersInit;
   timeout?: number;
@@ -12,46 +11,6 @@ export interface ApiRequestOptions {
   accessToken?: string;
 }
 
-// Pageable
-export interface Pageable {
-  pageNumber: number;
-  pageSize: number;
-  sort: Array<{
-    direction: 'ASC' | 'DESC';
-    property: string;
-    ignoreCase: boolean;
-    nullHandling: string;
-    descending: boolean;
-    ascending: boolean;
-  }>
-  offset: number;
-  paged: boolean;
-  unpaged: boolean;
-}
-
-// Pagination Data
-export interface PaginationData<T> {
-  content: T;
-  pageable: Pageable;
-  totalPages: number;
-  totalElements: number;
-  last: boolean;
-  numberOfElements: number;
-  size: number;
-  number: number;
-  sort: Array<{
-    direction: 'ASC' | 'DESC';
-    property: string;
-    ignoreCase: boolean;
-    nullHandling: string;
-    descending: boolean;
-    ascending: boolean;
-  }>;
-  first: boolean;
-  empty: boolean;
-}
-
-// Api Response From Server
 export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
@@ -60,216 +19,105 @@ export interface ApiResponse<T = any> {
   timestamp?: string;
 }
 
+export interface PaginationData<T> {
+  content: T;
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  first: boolean;
+  size: number;
+  number: number;
+}
+
 export interface PaginationParams {
   page?: number;
   limit?: number;
-  [key: string]: any; // For additional filters
+  [key: string]: any;
 }
 
 class ApiClient {
   private cache = new Map<string, { data: any, timestamp: number, ttl: number }>();
-  private requestCount = 0;
   private getAuthStore?: () => { accessToken: string | null; refreshAccessToken: () => Promise<void> };
 
   constructor(private baseUrl: object = API_CONFIG.API_END_POINT) { }
 
   setAuthStore(getAuthStore: () => { accessToken: string | null; refreshAccessToken: () => Promise<void> }): void {
     this.getAuthStore = getAuthStore;
-  };
-
-  /**
-   * Get access token
-   */
-  private getAccessToken(optionsToken?: string): string | null {
-    if (optionsToken) return optionsToken;
-    if (this.getAuthStore) {
-      return this.getAuthStore().accessToken;
-    }
-    return null;
   }
 
-  /**
-   * Generate unique cache key
-   * @param url
-   * @param options
-   * @returns string
-   */
-  private generateCacheKey(url: string, options?: RequestInit): string {
+  private getAccessToken(optionsToken?: string): string | null {
+    return optionsToken || this.getAuthStore?.().accessToken || null;
+  }
+
+  private getCacheKey(url: string, options?: RequestInit): string {
     const method = options?.method || "GET";
     const body = options?.body ? JSON.stringify(options.body) : "";
     return `${method}:${url}:${body}`;
   }
 
-  /**
-   * Get cache key  
-   * @param key
-   * @returns T | null
-   */
   private getCachedData<T>(key: string): T | null {
-    const cached = this.cache.get(key)
-    if (!cached) return null;
-
-    const now = Date.now();
-    if (now - cached.timestamp > cached.ttl) {
-      this.cache.delete(key)
+    const cached = this.cache.get(key);
+    if (!cached || Date.now() - cached.timestamp > cached.ttl) {
+      this.cache.delete(key);
       return null;
     }
-
     return cached.data as T;
   }
 
-  /**
-   * Set cache data
-   * @param key 
-   * @param data 
-   * @param ttl 
-   */
   private setCachedData<T>(key: string, data: T, ttl: number): void {
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now(),
-      ttl
-    })
+    this.cache.set(key, { data, timestamp: Date.now(), ttl });
 
-    // Cleanup old cache entries (keep only last 100)
+    // Keep only last 100 entries
     if (this.cache.size > 100) {
-      const entries = Array.from(this.cache.entries())
-      entries.sort((a, b) => a[1].timestamp - b[1].timestamp)
-      entries.slice(0, this.cache.size - 100).forEach(([key]) => {
-        this.cache.delete(key);
-      })
-    }
-  }
-
-  /**
-   * Prepare headers with authentication
-   */
-  private prepareHeaders(options?: ApiRequestOptions): HeadersInit {
-    const headers: HeadersInit = {
-      ...options?.headers
-    };
-    const token = this.getAccessToken(options?.accessToken);
-    if (token) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-    }
-    return headers;
-  }
-
-  /**
-   * Validate Reponse data
-   * @param responseData 
-   * @param rawResponse 
-   * @returns T
-   */
-  private processResponse<T>(responseData: any, rawResponse: boolean = false): T {
-    if (rawResponse) {
-      return responseData as T;
-    }
-    // If Error
-    if (this.isApiResponse(responseData)) {
-      const apiResponse = responseData as ApiResponse<T>;
-      if (!apiResponse.success) {
-        if (apiResponse.errors && apiResponse.errors.length > 0) {
-          throw new ResponseValidationError(apiResponse.message, apiResponse.errors);
-        } else {
-          throw new BusinessError(apiResponse.message);
-        }
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey) {
+        this.cache.delete(oldestKey);
       }
-      // Return if success
-      return apiResponse.data;
     }
-    // If not ApiReponse structure, return raw data
-    return responseData as T;
   }
 
-  /**
-   * Check if valid response structure
-   * @param data
-   * @returns boolean
-   */
-  private isApiResponse(data: any): data is ApiResponse {
-    return (
-      data != null
-      && typeof data === 'object'
-      && typeof data.success === 'boolean'
-      && typeof data.message === 'string'
-      && 'data' in data
-    );
+  private processResponse<T>(responseData: any, rawResponse: boolean = false): T {
+    if (rawResponse) return responseData as T;
+
+    if (responseData?.success === false) {
+      if (responseData.errors?.length > 0) {
+        throw new ResponseValidationError(responseData.message, responseData.errors);
+      }
+      throw new BusinessError(responseData.message);
+    }
+
+    return responseData?.data ?? responseData;
   }
 
-  /**
-   * Make request with timeout
-   * @param url 
-   * @param options 
-   * @param timeout 
-   * @param rawResponse 
-   * @returns 
-   */
-  private async makeRequestWithTimeout<T>(
-    url: string,
-    options: RequestInit,
-    timeout: number,
-    rawResponse: boolean = false
-  ): Promise<T> {
+  private async makeRequest<T>(url: string, options: RequestInit, timeout: number, rawResponse = false): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal
-      });
-
+      const response = await fetch(url, { ...options, signal: controller.signal });
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        let errorMsg: string = `HTTP ${response.status}: ${response.statusText}`
+        let errorMsg = `HTTP ${response.status}: ${response.statusText}`;
         let errors: string[] = [];
 
         try {
           const errorData = await response.json();
-          if (this.isApiResponse(errorData)) {
-            errorMsg = errorData.message || errorMsg;
-            errors = errorData.errors || [];
-          } else {
-            errorMsg = errorData.message || errorData.error || errorMsg;
-          }
-        } catch {
+          errorMsg = errorData.message || errorData.error || errorMsg;
+          errors = errorData.errors || [];
+        } catch { }
 
-        }
-
-        if (response.status >= 400 && response.status < 500) {
-          if (response.status === 422) {
-            throw new BusinessError(errorMsg);
-          } else if (response.status === 400) {
-            throw new ResponseValidationError(errorMsg, errors);
-          } else if (response.status === 401) {
-            if (this.getAuthStore) {
-              try {
-                await this.getAuthStore().refreshAccessToken();
-                throw new ApiError("Token refreshed - retry request", response.status, response.statusText, null, errors);
-              } catch (refreshError) {
-                throw new ApiError("Unauthorized - Invalid or expired token", response.status, response.statusText, null, errors);
-              }
-            } else {
-              throw new ApiError("Unauthorized - Invalid or expired token", response.status, response.statusText, null, errors);
-            }
-          } else {
-            throw new ApiError(errorMsg, response.status, response.statusText, null, errors);
-          }
-        } else {
-          throw new ApiError(errorMsg, response.status, response.statusText);
-        }
+        throw new ApiError(errorMsg, response.status, response.statusText, null, errors);
       }
 
-      const responseData = await response.json();
-      this.requestCount++;
-      return this.processResponse(responseData, rawResponse);
+      const data = await response.json();
+      return this.processResponse(data, rawResponse);
     } catch (error) {
       clearTimeout(timeoutId);
+
       if (error instanceof Error) {
         if (error.name === "AbortError") {
-          throw new TimeoutError(`Request time out after ${timeout}ms`);
+          throw new TimeoutError(`Request timed out after ${timeout}ms`);
         }
         if (error.message.includes('fetch')) {
           throw new NetworkError("Network connection failed");
@@ -279,12 +127,6 @@ class ApiClient {
     }
   }
 
-  /**
-   * Make request
-   * @param endpoint 
-   * @param options 
-   * @returns 
-   */
   async request<T>(endpoint: string, options: Omit<RequestInit, "cache"> & ApiRequestOptions = {}): Promise<T> {
     const {
       timeout = API_CONFIG.TIMEOUTS.DEFAULT,
@@ -294,23 +136,25 @@ class ApiClient {
       rawResponse = false,
       accessToken,
       ...fetchOptions
-    } = options
+    } = options;
 
     const url = endpoint.startsWith("http") ? endpoint : `${this.baseUrl}${endpoint}`;
-    const headers = this.prepareHeaders(options);
-    const requestOptions = {
+    const token = this.getAccessToken(accessToken);
+
+    const requestOptions: RequestInit = {
       ...fetchOptions,
-      headers
-    }
+      headers: {
+        ...options.headers,
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    };
 
-    const cacheKey = this.generateCacheKey(url, requestOptions);
+    const cacheKey = this.getCacheKey(url, requestOptions);
 
-    // Check cache first
+    // Check cache
     if (cache && fetchOptions.method !== "POST") {
       const cachedData = this.getCachedData<T>(cacheKey);
-      if (cachedData) {
-        return cachedData;
-      }
+      if (cachedData) return cachedData;
     }
 
     let lastError: Error;
@@ -318,7 +162,7 @@ class ApiClient {
 
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
-        const data = await this.makeRequestWithTimeout<T>(url, requestOptions, timeout);
+        const data = await this.makeRequest<T>(url, requestOptions, timeout, rawResponse);
 
         // Cache successful responses
         if (cache && fetchOptions.method !== "POST") {
@@ -329,7 +173,26 @@ class ApiClient {
       } catch (error) {
         lastError = error as Error;
 
-        // Don't retry on client errors (4xx)
+        // Handle 401 - refresh token and retry once
+        if (error instanceof ApiError && error.status === 401 && attempt === 0 && this.getAuthStore) {
+          try {
+            await this.getAuthStore().refreshAccessToken();
+
+            // Update token in headers and retry
+            const newToken = this.getAuthStore().accessToken;
+            if (newToken) {
+              requestOptions.headers = {
+                ...requestOptions.headers,
+                Authorization: `Bearer ${newToken}`
+              };
+              continue; // Retry with new token
+            }
+          } catch {
+            throw new ApiError("Authentication failed - please login again", 401, "Unauthorized");
+          }
+        }
+
+        // Don't retry on client errors (except 401 handled above)
         if (error instanceof ApiError && error.status && error.status >= 400 && error.status < 500) {
           throw error;
         }
@@ -339,12 +202,10 @@ class ApiClient {
         }
 
         // Don't retry on last attempt
-        if (attempt === retries - 1) {
-          break;
-        }
+        if (attempt === retries - 1) break;
 
-        // Wait before retry with exponential backoff
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, delay));
         delay = Math.min(delay * 2, API_CONFIG.RETRY.MAX_DELAY);
       }
     }
@@ -352,13 +213,40 @@ class ApiClient {
     throw lastError!;
   }
 
-  /* ----------------------------------------------------------------------------------- */
-
-  // Http method
+  // HTTP methods
   async get<T>(endpoint: string, options?: ApiRequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "GET" });
   }
 
+  async post<T>(endpoint: string, data?: any, options?: ApiRequestOptions): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers
+      },
+      body: data ? JSON.stringify(data) : undefined
+    });
+  }
+
+  async put<T>(endpoint: string, data?: any, options?: ApiRequestOptions): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers
+      },
+      body: data ? JSON.stringify(data) : undefined
+    });
+  }
+
+  async delete<T>(endpoint: string, options?: ApiRequestOptions): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: "DELETE" });
+  }
+
+  // Pagination helper
   async getWithPaginated<T>(endpoint: string, options?: ApiRequestOptions): Promise<PaginationData<T> & {
     hasNext: boolean;
     hasPrevious: boolean;
@@ -388,66 +276,16 @@ class ApiClient {
     }
   }
 
-  async post<T>(endpoint: string, data?: any, options?: ApiRequestOptions): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers
-      },
-      body: data ? JSON.stringify(data) : undefined
-    })
-  }
-
-  async put<T>(endpoint: string, data?: any, options?: ApiRequestOptions): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: "PUT",
-      headers: {
-        'Content-Type': "application/json",
-        ...options?.headers
-      },
-      body: data ? JSON.stringify(data) : undefined
-    })
-  }
-
-  async delete<T>(endpoint: string, options?: ApiRequestOptions): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "DELETE" });
-  }
-
-  /* ----------------------------------------------------------------------------------- */
 
   // Utility methods
   clearCache(): void {
     this.cache.clear();
   }
 
-  getRequestCount(): number {
-    return this.requestCount;
-  }
-
-  resetRequestCount(): void {
-    this.requestCount = 0;
-  }
-
   getCacheSize(): number {
     return this.cache.size;
-  }
-
-  isCached(endpoint: string, options?: RequestInit): boolean {
-    const url = endpoint.startsWith("http") ? endpoint : `${this.baseUrl}${endpoint}`;
-    const cacheKey = this.generateCacheKey(url, options);
-    return this.cache.has(cacheKey);
-  }
-
-  removeCacheEntry(endpoint: string, options?: RequestInit): void {
-    const url = endpoint.startsWith("http") ? endpoint : `${this.baseUrl}${endpoint}`;
-    const cacheKey = this.generateCacheKey(url, options);
-    this.cache.delete(cacheKey);
   }
 }
 
 export const apiClient = new ApiClient();
-
 export { ApiClient };

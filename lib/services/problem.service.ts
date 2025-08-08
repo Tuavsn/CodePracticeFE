@@ -11,7 +11,7 @@ export const ProblemService = {
 		getPreveviousPageParams: () => URLSearchParams | null;
 	}> => {
 		try {
-			const { page = 0, size = 4, sort = "createdAt, DESC", ...filters } = params;
+			const { page = 0, size = 6, sort = "createdAt, DESC", ...filters } = params;
 			const queryParams = new URLSearchParams({
 				page: page.toString(),
 				size: size.toString(),

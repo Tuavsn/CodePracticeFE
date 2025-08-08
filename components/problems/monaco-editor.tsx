@@ -28,7 +28,7 @@ export default function Editor({
 			theme={theme}
 			options={{
 				minimap: { enabled: true },
-				fontSize: 16,
+				fontSize: 14,
 				lineNumbers: "on",
 				roundedSelection: false,
 				scrollBeyondLastLine: false,

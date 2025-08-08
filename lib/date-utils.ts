@@ -1,6 +1,6 @@
 export function formatDate(isoString: string): string {
   const date = new Date(isoString);
-  return date.toLocaleDateString("vi-VN", {
+  return date.toLocaleDateString("eu", {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

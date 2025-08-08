@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProblemService } from "@/lib/services/problem.service";
 import { stringToSlug } from "@/lib/string-utils";
 import { getDifficultyColor } from "@/lib/utils";
-import { ArrowLeft, Play, Share, ThumbsDown, ThumbsUp } from "lucide-react";
+import { ArrowLeft, PlayCircle, Share, ThumbsDown, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 
 export default async function ProblemDetailPage({
@@ -94,7 +94,7 @@ export default async function ProblemDetailPage({
                     </Button> */}
                     <Link href={`/problems/solve/${stringToSlug(problem.title)}-${problemId}`}>
                       <Button>
-                        <Play className="h-4 w-4 mr-1" />
+                        <PlayCircle className="h-4 w-4" />
                         Solve
                       </Button>
                     </Link>

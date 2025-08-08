@@ -3,15 +3,18 @@ import FullscreenLayout from "@/components/layout/fullscreen-layout";
 import LoadingOverlay from "@/components/loading";
 import CodeControl from "@/components/problems/code-control";
 import Editor from "@/components/problems/monaco-editor";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuthContext } from "@/contexts/auth-context";
 import { useEditor } from "@/hooks/use-submission";
 import { formatDate } from "@/lib/date-utils";
 import { getDifficultyColor } from "@/lib/utils";
 import { Result, Submission } from "@/types/submission";
-import { ArrowLeft, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, Trophy, AlertCircle, Loader2 } from "lucide-react";
+import { ACHIEVEMENT, User } from "@/types/user";
+import { ArrowLeft, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, Trophy, AlertCircle, Loader2, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -240,6 +243,7 @@ export default function ProblemSolvePage() {
 	// const [activeTab, setActiveTab] = useState<'descriptions' | 'problems' | 'results' | 'run'>('descriptions')
 	const [activeTab, setActiveTab] = useState<'descriptions' | 'problems' | 'results'>('descriptions')
 	const [loadingSubmissionIds, setLoadingSubmissionIds] = useState<Set<string>>(new Set());
+	const { user } = useAuthContext();
 
 	// useEditor giờ sẽ handle tất cả logic liên quan đến problem
 	const {
@@ -347,19 +351,75 @@ export default function ProblemSolvePage() {
 		</Button>
 	);
 
-	const renderTopBar = () => (
-		<div className={`border-b p-4 ${themeClasses.border} ${themeClasses.background}`}>
-			<div className="flex items-center justify-between">
-				<div className="flex items-center space-x-4">
-					{renderBackButton()}
-					<div className="flex items-center space-x-2">
-						<h1 className={`font-semibold ${themeClasses.text}`}>{problem.title}</h1>
-						<Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
+	const renderTopBar = (user: Partial<User> | null) => {
+		const achievementConfig = {
+			[ACHIEVEMENT.BEGINNER]: {
+				label: "Beginner",
+				color: "text-gray-600",
+				bgColor: "bg-gray-100"
+			},
+			[ACHIEVEMENT.INTERMEDIATE]: {
+				label: "Intermediate",
+				color: "text-gray-800",
+				bgColor: "bg-gray-200"
+			},
+			[ACHIEVEMENT.EXPERT]: {
+				label: "Expert",
+				color: "text-white",
+				bgColor: "bg-black"
+			}
+		};
+
+		const achievement = user?.achievement ? achievementConfig[user.achievement] : achievementConfig[ACHIEVEMENT.BEGINNER];
+
+		return (
+			<div className={`border-b p-4 ${themeClasses.border} ${themeClasses.background}`}>
+				<div className="flex items-center justify-between">
+					<div className="flex-1 flex items-center space-x-4">
+						{renderBackButton()}
+						<div className="flex items-center space-x-2">
+							<h1 className={`font-semibold ${themeClasses.text}`}>{problem.title}</h1>
+							<Badge className={getDifficultyColor(problem.difficulty)}>{problem.difficulty}</Badge>
+						</div>
 					</div>
+					{user && (
+						<div className="flex items-center gap-4">
+							<div className="relative">
+								{user?.avatar ? (
+									<Avatar className="h-12 w-12 rounded-md flex-shrink-0">
+										<AvatarImage src={user.avatar} alt={user.username} />
+										<AvatarFallback>{user.email}</AvatarFallback>
+									</Avatar>
+								) : (
+									<div className="w-12 h-12 bg-black rounded-full flex items-center justify-center">
+										<UserIcon className="h-6 w-6 text-white" />
+									</div>
+								)}
+								<div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-600 rounded-full border-2 border-white"></div>
+							</div>
+
+							<div className="flex flex-col">
+								<div className="flex items-center gap-2">
+									<h3 className="font-semibold text-gray-900">{user?.username}</h3>
+									<span className={`px-2 py-1 rounded-full text-xs font-medium ${achievement.color} ${achievement.bgColor}`}>
+										{achievement.label}
+									</span>
+								</div>
+								<div className="flex items-center gap-3 text-sm text-gray-600">
+									<div className="flex items-center gap-1">
+										<Trophy className="h-3 w-3" />
+										<span>{user?.totalSubmissionPoint || 0} point</span>
+									</div>
+									<div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+									<span>{user?.email}</span>
+								</div>
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
-		</div>
-	);
+		)
+	};
 
 	const renderProblemInfo = () => (
 		<TabsContent value="descriptions" className="mt-4">
@@ -447,7 +507,7 @@ export default function ProblemSolvePage() {
 				{/* Tabs */}
 				{/* <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ('descriptions' | 'problems' | 'results' | 'run'))} className={isDark ? 'dark' : ''}> */}
 				<Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ('descriptions' | 'problems' | 'results'))} className={isDark ? 'dark' : ''}>
-					<TabsList className={`grid w-full grid-cols-4 ${themeClasses.mutedBg} ${themeClasses.border}`}>
+					<TabsList className={`grid w-full grid-cols-3 ${themeClasses.mutedBg} ${themeClasses.border}`}>
 						<TabsTrigger className={`data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="descriptions">Description</TabsTrigger>
 						<TabsTrigger className={`data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="examples">Examples</TabsTrigger>
 						<TabsTrigger className={`data-[state=active]:${themeClasses.cardBg} data-[state=active]:${themeClasses.text}`} value="results">Results</TabsTrigger>
@@ -493,7 +553,7 @@ export default function ProblemSolvePage() {
 	return (
 		<FullscreenLayout>
 			<div className={`h-[calc(100vh-4rem)] ${themeClasses.background}`}>
-				{renderTopBar()}
+				{renderTopBar(user)}
 				<ResizablePanelGroup direction="horizontal" className="h-[calc(100%-5rem)]">
 					{renderLeftPanel()}
 					<ResizableHandle withHandle />
