@@ -23,10 +23,7 @@ export default function ProblemGrid({
 		<>
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				{problems.map((problem) => (
-					<ProblemCard
-						key={problem.id}
-						problem={problem}
-					/>
+					<ProblemCard problem={problem} key={problem.id} />
 				))}
 			</div>
 			{/* Pagination */}

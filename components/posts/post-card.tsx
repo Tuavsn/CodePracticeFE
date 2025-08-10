@@ -109,7 +109,7 @@ export default function PostCard({
             </div>
           )}
         </div>
-      </CardContent>
+      </CardContent >
     )
   }
 
@@ -122,15 +122,17 @@ export default function PostCard({
   }
 
   return (
-    <Card className="border-0 rounded-none shadow-none gap-1 hover:bg-gray-70/30 hover:shadow-sm transition-all duration-200 group cursor-pointer relative overflow-hidden">
-      {/* Post header */}
-      {renderPostHeader()}
+    <Link href={`/posts/${stringToSlug(post.title)}-${post.id}`}>
+      <Card className="border-0 rounded-none shadow-none gap-1 hover:bg-gray-70/30 hover:shadow-sm transition-all duration-200 group cursor-pointer relative overflow-hidden">
+        {/* Post header */}
+        {renderPostHeader()}
 
-      {/* Post Content */}
-      {renderPostContent()}
+        {/* Post Content */}
+        {renderPostContent()}
 
-      {/* Card Footer Actions */}
-      {renderPostFooter()}
-    </Card>
+        {/* Card Footer Actions */}
+        {renderPostFooter()}
+      </Card>
+    </Link>
   )
 }
