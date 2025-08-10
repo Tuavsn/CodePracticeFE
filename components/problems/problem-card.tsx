@@ -3,7 +3,7 @@ import { Problem } from "@/types/problem";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Badge } from "../ui/badge";
 import Link from "next/link";
-import { Users, TrendingUp, PlayCircle } from "lucide-react";
+import { Users, TrendingUp } from "lucide-react";
 import { formatDate } from "@/lib/date-utils";
 import { stringToSlug } from "@/lib/string-utils";
 import { getDifficultyColor } from "@/lib/utils";
