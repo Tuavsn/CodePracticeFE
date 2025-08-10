@@ -1,21 +1,44 @@
 import { Problem } from "@/types/problem";
 import ProblemCard from "./problem-card";
+import DataPagination from "../pagination";
+import { PaginationData } from "@/lib/api/api-client";
 
 interface ProblemGridProps {
-	problems: Problem[]
+	paginatedProblems: PaginationData<Problem[]>
 }
 
 export default function ProblemGrid({
-	problems
+	paginatedProblems
 }: ProblemGridProps) {
+
+	const problems = paginatedProblems.content;
+
+	const totalPage = paginatedProblems.totalPages;
+
+	const totalItem = paginatedProblems.totalElements;
+
+	const pageSize = paginatedProblems.size;
+
 	return (
-		<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-			{problems.map((problem) => (
-				<ProblemCard
-					key={problem.id}
-					problem={problem}
-				/>
-			))}
-		</div>
+		<>
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				{problems.map((problem) => (
+					<ProblemCard
+						key={problem.id}
+						problem={problem}
+					/>
+				))}
+			</div>
+			{/* Pagination */}
+			<DataPagination
+				totalPage={totalPage}
+				totalItems={totalItem}
+				pageSize={pageSize}
+				maxVisiblePages={5}
+				showPageInfo={true}
+				showItemsCount={true}
+				className="my-4"
+			/>
+		</>
 	)
 }

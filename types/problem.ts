@@ -58,16 +58,8 @@ export interface ProblemCodeTemplate {
   code: string;
 }
 
-export interface ProblemFilter {
-  difficulty?: (keyof typeof PROBLEM_COMPLEXITY);
-  category?: string;
-  tags?: string[];
-  status?: 'all' | 'solved' | 'unsolved' | 'published' | 'draft' | 'archived' | 'deleted';
-  sortBy: 'newest' | 'oldest' | 'difficulty' | 'acceptance';
-  search?: string;
-}
-
 export const PROBLEM_COMPLEXITY = {
+  ALL: 'all',
   EASY: 'easy',
   MEDIUM: 'medium',
   HARD: 'hard'

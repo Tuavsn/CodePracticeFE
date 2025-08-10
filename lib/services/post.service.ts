@@ -1,30 +1,40 @@
 import { CreatePostCommentRequest, CreatePostRequest, Post, PostComment, PostReaction, UpdatePostCommentRequest, UpdatePostRequest } from "@/types/post";
-import { apiClient, PaginationData, PaginationParams } from "../api/api-client";
+import { apiClient, FilterParams, PaginationData, PaginationParams } from "../api/api-client";
 import { API_CONFIG } from "../api/api-config";
 import { CommentReaction } from "@/types/problem";
 
 
 export const PostService = {
   //================================ Post =======================================
-  getPosts: async (params: PaginationParams = {}): Promise<PaginationData<Post[]> & {
-      hasNext: boolean;
-      hasPrevious: boolean;
-      getNextPageParams: () => URLSearchParams | null;
-      getPreveviousPageParams: () => URLSearchParams | null;
-    }> => {
+  getPosts: async (
+    params: PaginationParams & FilterParams
+  ): Promise<PaginationData<Post[]>> => {
     try {
-      const { page = 0, size = 5, sort = "createdAt, DESC", ...filters } = params;
-      const queryParams = new URLSearchParams({
-        page: page.toString(),
-        size: size.toString(),
-        sort: sort,
-        ...Object.entries(filters).reduce((acc, [key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            acc[key] = value.toString();
-          };
-          return acc;
-        }, {} as Record<string, string>)
-      })
+      const defaultParams: Required<PaginationParams & FilterParams> = {
+        page: 0,
+        size: 5,
+        sort: "desc",
+        tags: [],
+        search: "",
+      };
+
+      const finalParams = { ...defaultParams, ...params };
+
+      const queryObject: Record<string, string> = {
+        page: finalParams.page.toString(),
+        size: finalParams.size.toString(),
+        sortDir: finalParams.sort,
+      };
+
+      if (finalParams.tags.length > 0) {
+        queryObject.tags = finalParams.tags.join(",");
+      }
+
+      if (finalParams.search) {
+        queryObject.title = finalParams.search;
+      }
+
+      const queryParams = new URLSearchParams(queryObject);
       const url = `${API_CONFIG.API_END_POINT.POST}?${queryParams.toString()}`;
       console.log('Fetching posts with url: ' + url)
       const response = await apiClient.getWithPaginated<Post[]>(url);

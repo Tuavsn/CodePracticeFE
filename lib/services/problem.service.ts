@@ -1,32 +1,47 @@
-import { CreateProblemCommentRequest, CreateProblemRequest, Problem, ProblemComment, UpdateProblemCommentRequest, UpdateProblemRequest } from "@/types/problem";
-import { apiClient, PaginationData, PaginationParams } from "../api/api-client";
+import { CreateProblemCommentRequest, CreateProblemRequest, Problem, PROBLEM_COMPLEXITY, ProblemComment, UpdateProblemCommentRequest, UpdateProblemRequest } from "@/types/problem";
+import { apiClient, FilterParams, PaginationData, PaginationParams } from "../api/api-client";
 import { API_CONFIG } from "../api/api-config";
 
 export const ProblemService = {
 	//================================ Problem =======================================
-	getProblems: async (params: PaginationParams = {}): Promise<PaginationData<Problem[]> & {
-		hasNext: boolean;
-		hasPrevious: boolean;
-		getNextPageParams: () => URLSearchParams | null;
-		getPreveviousPageParams: () => URLSearchParams | null;
-	}> => {
+	getProblems: async (
+		params: PaginationParams & FilterParams & { difficulty?: (keyof typeof PROBLEM_COMPLEXITY) }
+	): Promise<PaginationData<Problem[]>> => {
 		try {
-			const { page = 0, size = 6, sort = "createdAt, DESC", ...filters } = params;
-			const queryParams = new URLSearchParams({
-				page: page.toString(),
-				size: size.toString(),
-				sort: sort,
-				...Object.entries(filters).reduce((acc, [key, value]) => {
-					if (value !== undefined && value !== null && value !== '') {
-						acc[key] = value.toString();
-					};
-					return acc;
-				}, {} as Record<string, string>)
-			})
-			const url = `${API_CONFIG.API_END_POINT.PROBLEM}?${queryParams.toString()}`
-			console.log("Fetching all problems with url: " + url);
-			const response = await apiClient.getWithPaginated<Problem[]>(url);
-			return response;
+			const defaultParams: Required<PaginationParams & FilterParams & { difficulty?: (keyof typeof PROBLEM_COMPLEXITY) }> = {
+				page: 0,
+				size: 6,
+				sort: "desc",
+				difficulty: "ALL",
+				tags: [],
+				search: "",
+			};
+
+			const finalParams = { ...defaultParams, ...params };
+
+			const queryObject: Record<string, string> = {
+				page: finalParams.page.toString(),
+				size: finalParams.size.toString(),
+				sortDir: finalParams.sort,
+			};
+
+			if (finalParams.difficulty !== 'ALL') {
+				queryObject.difficulty = finalParams.difficulty;
+			}
+
+			if (finalParams.tags.length > 0) {
+				queryObject.tags = finalParams.tags.join(",");
+			}
+
+			if (finalParams.search) {
+				queryObject.title = finalParams.search;
+			}
+
+			const queryParams = new URLSearchParams(queryObject);
+			const url = `${API_CONFIG.API_END_POINT.PROBLEM}?${queryParams.toString()}`;
+			console.log("Fetching all problems with url:", url);
+
+			return await apiClient.getWithPaginated<Problem[]>(url);
 		} catch (error) {
 			throw error;
 		}

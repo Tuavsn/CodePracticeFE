@@ -5,25 +5,23 @@ import CTAButtons, { CTAButtonsType } from "@/components/cta-buttons";
 import ContainerLayout from "@/components/layout/container-layout";
 import { PostService } from "@/lib/services/post.service";
 import PostList from "@/components/posts/post-list";
-import DataPagination from "@/components/pagination";
+import PostFilter from "@/components/posts/post-filter";
 
 export default async function PostPage({
   searchParams
-}: { searchParams: Promise<{ page?: string }> }) {
+}: { searchParams: Promise<{ page?: string, size?: string, sort?: 'asc' | 'desc' | undefined, search?: string }> }) {
 
   const resolvedSearchParams = await searchParams;
 
   const currentPage = parseInt(resolvedSearchParams.page || '1') - 1;
 
-  const paginatedPosts = await PostService.getPosts({ page: currentPage });
+  const size = parseInt(resolvedSearchParams.size || '5');
 
-  const totalPage = paginatedPosts.totalPages;
+  const sort = resolvedSearchParams.sort || 'desc';
 
-  const totalItem = paginatedPosts.totalElements;
+  const search = resolvedSearchParams.search || '';
 
-  const pageSize = paginatedPosts.size;
-
-  const posts = paginatedPosts.content;
+  const paginatedPosts = await PostService.getPosts({ page: currentPage, size, sort, search });
 
   const ctaButtons: { type: CTAButtonsType }[] = [
     { type: 'code' },
@@ -111,20 +109,17 @@ export default async function PostPage({
       {/* Breadcrumb */}
       {renderBreadCrumb()}
 
-      {/* Post list */}
-      <PostList posts={posts} />
+      {/* Post Filter */}
+      <PostFilter className="my-4" />
 
-      {/* Pagination */}
-      <DataPagination
-        totalPage={totalPage}
-        totalItems={totalItem}
-        pageSize={pageSize}
-        maxVisiblePages={5}
-        showPageInfo={true}
-        showItemsCount={true}
-        className="my-4"
-      />
-
+      {/* Post List */}
+      {paginatedPosts.content.length > 0 ? (
+        <PostList paginatedPosts={paginatedPosts} />
+      ) : (
+        <div className="text-center py-4">
+          <p className="text-gray-500">No posts found.</p>
+        </div>
+      )}
     </ContainerLayout>
   )
 }

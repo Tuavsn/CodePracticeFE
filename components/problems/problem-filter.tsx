@@ -9,51 +9,60 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../ui/badge';
 
 // Types
-export interface PostFilterType {
+export interface ProblemFilterType {
+  difficulty?: keyof typeof PROBLEM_COMPLEXITY;
   tags?: string[];
   sort?: 'desc' | 'asc';
   search?: string;
 }
 
-interface PostFilterProps {
+interface ProblemFilterProps {
   /** Available tags for filtering */
   availableTags?: string[];
   /** Custom class name */
   className?: string;
   /** Callback when filters change (optional) */
-  onFiltersChange?: (filters: PostFilterType) => void;
+  onFiltersChange?: (filters: ProblemFilterType) => void;
   /** Show loading indicator */
   loading?: boolean;
 }
 
 // Constants
+export const PROBLEM_COMPLEXITY = {
+  EASY: { label: 'Easy', color: 'bg-blue-100 text-blue-800' },
+  MEDIUM: { label: 'Medium', color: 'bg-yellow-100 text-yellow-800' },
+  HARD: { label: 'Hard', color: 'bg-orange-100 text-orange-800' },
+} as const;
+
 const SORT_OPTIONS = [
   { value: 'desc', label: 'Newest' },
   { value: 'asc', label: 'Oldest' }
 ];
 
-export default function PostFilter({
+export default function ProblemFilter({
   availableTags = [],
   className,
   onFiltersChange,
   loading = false,
-}: PostFilterProps) {
+}: ProblemFilterProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  
+
   // Local state for search input (manual search)
   const [searchInput, setSearchInput] = useState('');
 
   // Parse current filters from URL
-  const currentFilters = useMemo((): PostFilterType => {
+  const currentFilters = useMemo((): ProblemFilterType => {
+    const difficulty = searchParams.get('difficulty') as keyof typeof PROBLEM_COMPLEXITY | null;
     const tagsParam = searchParams.get('tags');
     const tags = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
-    const sort = (searchParams.get('sort') as PostFilterType['sort']) || 'desc';
+    const sort = (searchParams.get('sort') as ProblemFilterType['sort']) || 'desc';
     const search = searchParams.get('search');
 
     return {
+      difficulty: difficulty && PROBLEM_COMPLEXITY[difficulty] ? difficulty : undefined,
       tags: tags.length > 0 ? tags : undefined,
       sort,
       search: search || undefined,
@@ -73,15 +82,15 @@ export default function PostFilter({
   }, [currentFilters, onFiltersChange]);
 
   // Create URL with new parameters
-  const createUrl = useCallback((updates: Partial<PostFilterType>) => {
+  const createUrl = useCallback((updates: Partial<ProblemFilterType>) => {
     const params = new URLSearchParams(searchParams);
     const newFilters = { ...currentFilters, ...updates };
 
     // Update URL parameters
     Object.entries(newFilters).forEach(([key, value]) => {
-      if (value === undefined || value === null || value === '' || 
-          (Array.isArray(value) && value.length === 0) ||
-          (key === 'status' && value === 'all')) {
+      if (value === undefined || value === null || value === '' ||
+        (Array.isArray(value) && value.length === 0) ||
+        (key === 'status' && value === 'all')) {
         params.delete(key);
       } else if (Array.isArray(value)) {
         params.set(key, value.join(','));
@@ -98,18 +107,18 @@ export default function PostFilter({
   }, [searchParams, pathname, currentFilters]);
 
   // Update URL with new filters
-  const updateUrl = useCallback((updates: Partial<PostFilterType>) => {
+  const updateUrl = useCallback((updates: Partial<ProblemFilterType>) => {
     if (isPending) return;
-    
+
     const url = createUrl(updates);
-    
+
     startTransition(() => {
       router.push(url, { scroll: false });
     });
   }, [createUrl, router, isPending]);
 
   // Handle individual filter updates
-  const updateFilter = useCallback((key: keyof PostFilterType, value: any) => {
+  const updateFilter = useCallback((key: keyof ProblemFilterType, value: any) => {
     updateUrl({ [key]: value });
   }, [updateUrl]);
 
@@ -138,7 +147,7 @@ export default function PostFilter({
   const resetFilters = useCallback(() => {
     setSearchInput('');
     const params = new URLSearchParams();
-    
+
     // Keep non-filter params if any
     const preserveParams = ['page']; // Add other params you want to preserve
     preserveParams.forEach(param => {
@@ -149,7 +158,7 @@ export default function PostFilter({
     });
 
     const url = `${pathname}${params.toString() ? `?${params.toString()}` : ''}`;
-    
+
     startTransition(() => {
       router.push(url, { scroll: false });
     });
@@ -161,20 +170,21 @@ export default function PostFilter({
     const newTags = currentTags.includes(tag)
       ? currentTags.filter(t => t !== tag)
       : [...currentTags, tag];
-    
+
     updateFilter('tags', newTags.length > 0 ? newTags : undefined);
   }, [currentFilters.tags, updateFilter]);
 
   // Count active filters
   const activeCount = useMemo(() => {
     let count = 0;
+    if (currentFilters.difficulty) count++;
     if (currentFilters.tags?.length) count++;
     if (currentFilters.search) count++;
     return count;
   }, [currentFilters]);
 
   // Remove individual filter
-  const removeFilter = useCallback((filterKey: keyof PostFilterType, value?: string) => {
+  const removeFilter = useCallback((filterKey: keyof ProblemFilterType, value?: string) => {
     switch (filterKey) {
       case 'tags':
         if (value) {
@@ -203,7 +213,7 @@ export default function PostFilter({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search posts..."
+          placeholder="Search problems..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           onKeyPress={handleSearchKeyPress}
@@ -227,8 +237,8 @@ export default function PostFilter({
             size="sm"
             className={cn(
               "h-6 w-6 p-0",
-              hasSearchChanged 
-                ? "text-blue-600 hover:text-blue-700 hover:bg-blue-50" 
+              hasSearchChanged
+                ? "text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                 : "text-muted-foreground hover:bg-muted"
             )}
             onClick={handleSearch}
@@ -243,8 +253,8 @@ export default function PostFilter({
       {/* Filter Controls */}
       <div className="flex flex-wrap gap-3">
         {/* Sort */}
-        <Select 
-          value={currentFilters.sort} 
+        <Select
+          value={currentFilters.sort}
           onValueChange={(value) => updateFilter('sort', value)}
           disabled={loading || isPending}
         >
@@ -260,10 +270,28 @@ export default function PostFilter({
           </SelectContent>
         </Select>
 
+        {/* Difficulty */}
+        <Select
+          value={currentFilters.difficulty || ''}
+          onValueChange={(value) => updateFilter('difficulty', value || undefined)}
+          disabled={loading || isPending}
+        >
+          <SelectTrigger className="w-32">
+            <SelectValue placeholder="Difficulty" />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(PROBLEM_COMPLEXITY).map(([key, value]) => (
+              <SelectItem key={key} value={key}>
+                {value.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         {/* Reset Button */}
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={resetFilters}
           disabled={loading || isPending || activeCount === 0}
           className="ml-auto"
@@ -302,11 +330,21 @@ export default function PostFilter({
       {/* Active Filters */}
       {activeCount > 0 && (
         <div className="flex flex-wrap gap-2 pt-2 border-t">
+          {currentFilters.difficulty && (
+            <Badge className={cn("text-xs", PROBLEM_COMPLEXITY[currentFilters.difficulty].color)}>
+              {PROBLEM_COMPLEXITY[currentFilters.difficulty].label}
+              <X
+                className="h-3 w-3 ml-1 cursor-pointer hover:bg-black/10 rounded"
+                onClick={() => removeFilter('difficulty')}
+              />
+            </Badge>
+          )}
+
           {currentFilters.tags?.map(tag => (
             <Badge key={tag} variant="secondary" className="text-xs">
               {tag}
-              <X 
-                className="h-3 w-3 ml-1 cursor-pointer hover:bg-black/10 rounded" 
+              <X
+                className="h-3 w-3 ml-1 cursor-pointer hover:bg-black/10 rounded"
                 onClick={() => removeFilter('tags', tag)}
               />
             </Badge>
@@ -315,8 +353,8 @@ export default function PostFilter({
           {currentFilters.search && (
             <Badge variant="secondary" className="text-xs">
               "{currentFilters.search}"
-              <X 
-                className="h-3 w-3 ml-1 cursor-pointer hover:bg-black/10 rounded" 
+              <X
+                className="h-3 w-3 ml-1 cursor-pointer hover:bg-black/10 rounded"
                 onClick={() => removeFilter('search')}
               />
             </Badge>

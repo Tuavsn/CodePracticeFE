@@ -31,8 +31,13 @@ export interface PaginationData<T> {
 
 export interface PaginationParams {
   page?: number;
-  limit?: number;
-  [key: string]: any;
+  size?: number;
+}
+
+export interface FilterParams {
+  sort?: 'desc' | 'asc';
+  tags?: string[];
+  search?: string;
 }
 
 class ApiClient {

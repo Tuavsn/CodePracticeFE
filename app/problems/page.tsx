@@ -5,25 +5,26 @@ import ContainerLayout from "@/components/layout/container-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProblemGrid from "@/components/problems/problem-gird";
 import { ProblemService } from "@/lib/services/problem.service";
-import DataPagination from "@/components/pagination";
+import ProblemFilter from "@/components/problems/problem-filter";
+import { PROBLEM_COMPLEXITY } from "@/types/problem";
 
 export default async function ProblemPage({
   searchParams
-}: { searchParams: Promise<{ page?: string }> }) {
+}: { searchParams: Promise<{ page?: string, size?: string, sort?: 'asc' | 'desc' | undefined, difficulty?: (keyof typeof PROBLEM_COMPLEXITY), search?: string }> }) {
 
   const resolvedSearchParams = await searchParams;
 
   const currentPage = parseInt(resolvedSearchParams.page || '1') - 1;
 
-  const paginatedProblems = await ProblemService.getProblems({ page: currentPage });
+  const size = parseInt(resolvedSearchParams.size || '6');
 
-  const totalPage = paginatedProblems.totalPages;
+  const sort = resolvedSearchParams.sort || 'desc';
 
-  const totalItem = paginatedProblems.totalElements;
+  const difficulty = resolvedSearchParams.difficulty || 'ALL';
 
-  const pageSize = paginatedProblems.size;
+  const search = resolvedSearchParams.search || '';
 
-  const problems = paginatedProblems.content;
+  const paginatedProblems = await ProblemService.getProblems({ page: currentPage, size, sort, difficulty, search });
 
   const ctaButtons: { type: CTAButtonsType }[] = [
     { type: 'post' },
@@ -153,20 +154,15 @@ export default async function ProblemPage({
       {/* Breadcrumb */}
       {renderBreadCrumb()}
 
+      {/* Problem Filter */}
+      <ProblemFilter className="my-4" />
+
       {/* Problem grid */}
-      <ProblemGrid problems={problems} />
-
-      {/* Pagination */}
-      <DataPagination
-        totalPage={totalPage}
-        totalItems={totalItem}
-        pageSize={pageSize}
-        maxVisiblePages={5}
-        showPageInfo={true}
-        showItemsCount={true}
-        className="my-4"
-      />
-
+      {paginatedProblems.content.length > 0 ? (
+        <ProblemGrid paginatedProblems={paginatedProblems} />
+      ) : (
+        <div className="text-center py-4">No problems found.</div>
+      )}
     </ContainerLayout>
   )
 }
