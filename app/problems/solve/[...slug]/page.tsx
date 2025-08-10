@@ -18,6 +18,7 @@ import { ArrowLeft, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, Trop
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 // Submission Item Component - Di chuyển ra ngoài component chính
 interface SubmissionItemProps {
@@ -290,8 +291,12 @@ export default function ProblemSolvePage() {
 	}
 
 	const handleSubmit = async () => {
-		await originalHandleSubmit();
-		setActiveTab('results');
+		if (!user) {
+			toast.error("You need to be logged in to submit.");
+		} else {
+			await originalHandleSubmit();
+			setActiveTab('results');
+		}
 	}
 
 	// Theme classes
@@ -400,7 +405,7 @@ export default function ProblemSolvePage() {
 
 							<div className="flex flex-col">
 								<div className="flex items-center gap-2">
-									<h3 className="font-semibold text-gray-900">{user?.username}</h3>
+									<h3 className={`font-semibold ${themeClasses.text}`}>{user?.username}</h3>
 									<span className={`px-2 py-1 rounded-full text-xs font-medium ${achievement.color} ${achievement.bgColor}`}>
 										{achievement.label}
 									</span>
@@ -408,10 +413,10 @@ export default function ProblemSolvePage() {
 								<div className="flex items-center gap-3 text-sm text-gray-600">
 									<div className="flex items-center gap-1">
 										<Trophy className="h-3 w-3" />
-										<span>{user?.totalSubmissionPoint || 0} point</span>
+										<span className={`${themeClasses.muted}`}>{user?.totalSubmissionPoint || 0} point</span>
 									</div>
 									<div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-									<span>{user?.email}</span>
+									<span className={`${themeClasses.muted}`}>{user?.email}</span>
 								</div>
 							</div>
 						</div>
