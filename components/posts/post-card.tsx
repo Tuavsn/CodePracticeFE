@@ -19,6 +19,8 @@ export default function PostCard({
   post,
 }: PostCardProps) {
 
+  console.log(post)
+
   const renderPostHeader = () => {
     return (
       <CardHeader className="pb-3">

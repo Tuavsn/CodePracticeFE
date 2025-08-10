@@ -16,6 +16,8 @@ export default function ProblemCard({
 	problem,
 }: ProblemCardProps) {
 
+	console.log(problem)
+
 	return (
 		<Link key={problem.id} href={`/problems/${stringToSlug(problem.title)}-${problem.id}`} className="block">
 			<Card className="h-full hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group cursor-pointer rounded-sm shadow-2xl border-0 bg-white dark:bg-gray-900">
