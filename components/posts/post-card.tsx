@@ -48,7 +48,7 @@ export default function PostCard({
                 </div>
               </div>
               {/* Created Date */}
-              <p className="text-sm text-muted-foreground truncate">{formatDate(post.createdAt)}</p>
+              <span className="text-xs text-muted-foreground truncate"><b className="font-bold">Published Time: </b>{formatDate(post.createdAt)}</span>
             </div>
           </div>
         </CardTitle>

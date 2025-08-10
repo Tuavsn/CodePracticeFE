@@ -5,7 +5,6 @@ import { Badge } from "../ui/badge";
 import Link from "next/link";
 import { Users, TrendingUp, PlayCircle } from "lucide-react";
 import { formatDate } from "@/lib/date-utils";
-import { Button } from "../ui/button";
 import { stringToSlug } from "@/lib/string-utils";
 import { getDifficultyColor } from "@/lib/utils";
 
