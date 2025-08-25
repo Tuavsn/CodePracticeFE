@@ -8,6 +8,7 @@ export interface Problem extends BaseObject {
   constraints: string[];
   examples: ProblemExample[];
   codeTemplates: ProblemCodeTemplate[];
+  sampleTests: ProblemTestCase[];
   hints: string[];
   difficulty: (keyof typeof PROBLEM_COMPLEXITY);
   reactionCount: number;
@@ -21,7 +22,7 @@ export interface Problem extends BaseObject {
   isSelected?: boolean;
 }
 
-export type CreateProblemRequest = Pick<Problem, 'title' | 'description' | 'difficulty' | 'tags' | 'constraints' | 'examples' | 'codeTemplates' | 'hints'>;
+export type CreateProblemRequest = Pick<Problem, 'title' | 'description' | 'difficulty' | 'tags' | 'constraints' | 'examples' | 'codeTemplates' | 'sampleTests' | 'hints' | 'timeLimitSeconds' | 'memoryLimitMb' | 'totalScore'>;
 
 export type UpdateProblemRequest = Partial<CreateProblemRequest>;
 
@@ -56,6 +57,12 @@ export interface ProblemExample {
 export interface ProblemCodeTemplate {
   language: SubmissionLanguageValue;
   code: string;
+}
+
+export interface ProblemTestCase {
+  input: string;
+  output: string;
+  point: number;
 }
 
 export const PROBLEM_COMPLEXITY = {

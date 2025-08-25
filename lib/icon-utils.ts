@@ -34,9 +34,9 @@ export function getRoleIcon(role: (keyof typeof ROLE)): React.ReactNode {
     case ROLE.USER:
       icon = React.createElement(User, { className: 'h-4 w-4 text-[#9ca3af]' });
       text = React.createElement('span', { className: 'text-sm text-[#9ca3af]' }, ROLE.USER.toLowerCase());
-    case ROLE.ADMIN:
+    case ROLE.SYSTEM_ADMIN:
       icon = React.createElement(UserCheck, { className: 'h-4 w-4 text-[#0476D0]' })
-      text = React.createElement('span', { className: 'text-sm text-[#0476D0]' }, ROLE.ADMIN.toLowerCase());
+      text = React.createElement('span', { className: 'text-sm text-[#0476D0]' }, ROLE.SYSTEM_ADMIN.toLowerCase());
     default:
       icon = React.createElement(User, { className: 'h-4 w-4 text-[#9ca3af]' })
       text = React.createElement('span', { className: 'text-sm text-[#9ca3af]' }, ROLE.USER.toLowerCase());

@@ -40,7 +40,7 @@ export const ACHIEVEMENT = {
 
 export const ROLE = {
   USER: 'user',
-  ADMIN: 'admin'
+  SYSTEM_ADMIN: 'system_admin'
 }
 
 export const ACCOUNT_PROVIDER = {

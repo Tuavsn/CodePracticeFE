@@ -1,7 +1,6 @@
-import { CreatePostCommentRequest, CreatePostRequest, Post, PostComment, PostReaction, UpdatePostCommentRequest, UpdatePostRequest } from "@/types/post";
+import { COMMENT_REACTION, CreatePostCommentRequest, CreatePostRequest, Post, POST_REACTION, PostComment, UpdatePostCommentRequest, UpdatePostRequest } from "@/types/post";
 import { apiClient, FilterParams, PaginationData, PaginationParams } from "../api/api-client";
 import { API_CONFIG } from "../api/api-config";
-import { CommentReaction } from "@/types/problem";
 
 
 export const PostService = {
@@ -123,7 +122,7 @@ export const PostService = {
     }
   },
   //================================ Reaction =======================================
-  reactionPost: async (postId: string, type: PostReaction): Promise<void> => {
+  reactionPost: async (postId: string, type: (keyof typeof POST_REACTION)): Promise<void> => {
     try {
       const url = `${API_CONFIG.API_END_POINT.POST}/${postId}/reactions?${type}`;
       console.log(`${type} post with url: ` + url);
@@ -132,7 +131,7 @@ export const PostService = {
       throw error;
     }
   },
-  reactionComment: async (postId: string, commentId: string, type: CommentReaction): Promise<void> => {
+  reactionComment: async (postId: string, commentId: string, type: (keyof typeof COMMENT_REACTION)): Promise<void> => {
     // TODO
     try {
       const url = `${API_CONFIG.API_END_POINT.POST}/${postId}/comments/${commentId}/reactions?`;

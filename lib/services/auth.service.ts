@@ -106,6 +106,7 @@ export const AuthService = {
 			username: userData?.username || tokenPayload.username || '',
 			email: userData?.email || tokenPayload.email,
 			avatar: userData?.avatar || '',
+      totalSubmissionPoint: userData?.totalSubmissionPoint || 0,
 			role: tokenPayload.roles || []
 		};
 	}

@@ -3,7 +3,7 @@ import Link from "next/link"
 import { Button } from "./ui/button";
 import { Bell, User, Settings, LogOut, Trophy, Target, Clock } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "./ui/dropdown-menu";
-import { useAuthContext } from "@/contexts/auth-context";
+import { useAuthStore } from "@/store/use-auth-store";
 import { ACHIEVEMENT } from "@/types/user";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -37,7 +37,7 @@ export default function UserAuth() {
     login,
     register,
     logout
-  } = useAuthContext();
+  } = useAuthStore();
 
   useEffect(() => {
     setHydrated(true);

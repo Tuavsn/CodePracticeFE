@@ -2,10 +2,9 @@
 import { Button } from "../ui/button"
 import { Loader2, MoreHorizontal } from "lucide-react"
 import { Post } from "@/types/post";
-import { useAuthContext } from "@/contexts/auth-context";
+import { useAuthStore } from "@/store/use-auth-store";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { usePost } from "@/hooks/use-post";
-import { usePostContext } from "@/contexts/post-context";
 
 interface PostCardHeaderActionProps {
 	post: Post;
@@ -13,11 +12,18 @@ interface PostCardHeaderActionProps {
 
 export default function PostCardHeaderActions({ post }: PostCardHeaderActionProps) {
 
-	const { user } = useAuthContext();
+	const { user } = useAuthStore();
 
-	const { openEditModal } = usePostContext();
+	const {
+		loading: isLoading,
+		openEditModal,
+		handleRemovePost,
+		handleCopyLink
+	} = usePost();
 
-	const { isLoading, handleDeletePost, handleCopyLink } = usePost();
+	const handleEdit = (post: Post) => {
+		openEditModal(post);
+	}
 
 	return (
 		<DropdownMenu>
@@ -32,8 +38,8 @@ export default function PostCardHeaderActions({ post }: PostCardHeaderActionProp
 				<DropdownMenuItem onClick={() => handleCopyLink(post)}>Copy Link</DropdownMenuItem>
 				{user && user.id == post.author.id && (
 					<>
-						<DropdownMenuItem onClick={() => openEditModal(post)}>Edit</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => handleDeletePost(post.id)}>
+						<DropdownMenuItem onClick={() => handleEdit(post)}>Edit</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => handleRemovePost(post.id)}>
 							{isLoading ? (
 								<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Deleting...</>
 							) : (

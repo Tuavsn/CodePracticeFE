@@ -1,5 +1,5 @@
 'use client'
-import { useAuthContext } from "@/contexts/auth-context";
+import { useAuthStore } from "@/store/use-auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { useComment } from "@/hooks/use-comment";
@@ -15,7 +15,7 @@ interface CommentInputProps {
 
 export default function CommentInput({ postId, problemId }: CommentInputProps) {
 
-	const { user } = useAuthContext();
+	const { user } = useAuthStore();
 
 	const { isLoading, formData, handleFormDataChange, handleSubmit } = useComment({postId, problemId});
 

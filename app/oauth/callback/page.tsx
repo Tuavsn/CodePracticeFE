@@ -1,7 +1,7 @@
 'use client'
 import LoadingOverlay from "@/components/loading";
 import { Button } from "@/components/ui/button";
-import { useAuthCallBack } from "@/contexts/auth-context";
+import { useAuthCallBack } from "@/store/use-auth-store";
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react";
 

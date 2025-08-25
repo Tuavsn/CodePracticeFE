@@ -3,8 +3,7 @@ import { Edit, Heart, MessageCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Post } from "@/types/post";
 import { usePost } from "@/hooks/use-post";
-import { usePostContext } from "@/contexts/post-context";
-import { useAuthContext } from "@/contexts/auth-context";
+import { useAuthStore } from "@/store/use-auth-store";
 
 interface PostDetailFooterActionsProps {
     post: Post;
@@ -12,11 +11,13 @@ interface PostDetailFooterActionsProps {
 
 export default function PostDetailFooterActions({ post }: PostDetailFooterActionsProps) {
 
-    const { user } = useAuthContext();
+    const { user } = useAuthStore();
 
-    const { openEditModal } = usePostContext();
-
-    const { handleLikePost, handleDislikePost } = usePost();
+    const {
+        openEditModal,
+        handleLikePost,
+        handleDislikePost
+    } = usePost();
 
     return (
         <div className="flex items-center justify-between pt-6 border-t">

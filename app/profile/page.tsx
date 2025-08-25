@@ -12,13 +12,13 @@ import { AuthService } from "@/lib/services/auth.service";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import LoadingOverlay from "@/components/loading";
-import { useAuthContext } from "@/contexts/auth-context";
+import { useAuthStore } from "@/store/use-auth-store";
 
 export default function ProfilePage() {
 
 	const [activeTab, setActiveTab] = useState("posts");
 
-	const { user, isLoading } = useAuthContext();
+	const { user, isLoading } = useAuthStore();
 
 	const renderBreadCrumb = () => {
 		return (

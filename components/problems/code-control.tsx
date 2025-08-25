@@ -1,15 +1,13 @@
 'use client'
-import { CheckCircle, Clock, Download, Moon, PlayCircle, RotateCcw, Sun } from "lucide-react"
+import { CheckCircle, Clock, Download, Moon, RotateCcw, Sun } from "lucide-react"
 import { Button } from "../ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { SUBMISSION_LANGUAGE, SubmissionLanguage } from "@/types/global"
 
 interface CodeControlProps {
-	isRunning: boolean
 	isSubmitting: boolean
 	language: SubmissionLanguage
 	theme: 'vs-light' | 'vs-dark'
-	handleRunCode: () => void
 	handleSubmit: () => void
 	handleDownload: () => void
 	handleResetCode: () => void
@@ -18,11 +16,9 @@ interface CodeControlProps {
 }
 
 export default function CodeControl({
-	isRunning,
 	isSubmitting,
 	language,
 	theme,
-	handleRunCode,
 	handleSubmit,
 	handleDownload,
 	handleResetCode,
@@ -71,26 +67,6 @@ export default function CodeControl({
 				</Select>
 			</div>
 			<div className="flex gap-2">
-				{/* Run */}
-				{/* <Button
-					variant="outline"
-					onClick={handleRunCode}
-					disabled={isRunning}
-					className={`gap-2 ${themeClasses.background} ${themeClasses.text} ${themeClasses.border} hover:${themeClasses.mutedBg} disabled:opacity-50`}
-				>
-					{isRunning ? (
-						<>
-							<Clock className="h-4 w-4 animate-spin" />
-							<span className={themeClasses.text}>Running...</span>
-						</>
-					) : (
-						<>
-							<PlayCircle className="h-4 w-4" />
-							<span className={themeClasses.text}>Run</span>
-						</>
-					)}
-				</Button> */}
-
 				{/* Submit */}
 				<Button
 					onClick={handleSubmit}

@@ -1,7 +1,7 @@
-import { useAuthContext } from "@/contexts/auth-context"
+import { useAuthStore } from "@/store/use-auth-store"
 
 export const useAuth = () => {
-  const auth = useAuthContext();
+  const auth = useAuthStore();
 
   return {
     ...auth,

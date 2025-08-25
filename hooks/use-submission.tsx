@@ -3,7 +3,7 @@ import { ProblemService } from "@/lib/services/problem.service";
 import { SubmissionService } from "@/lib/services/submission.service";
 import { SubmissionLanguage } from "@/types/global";
 import { DEFAULT_CODE_BASE, Problem } from "@/types/problem";
-import { Result, Solution, Submission } from "@/types/submission";
+import { Result, SubmitSolution, Submission, RunSolution, RunResponse } from "@/types/submission";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface useEditorProps {
@@ -21,6 +21,8 @@ export function useEditor({ problemId }: useEditorProps) {
 	// Editor states
 	const [language, setLanguage] = useState<SubmissionLanguage>("CPP");
 	const [code, setCode] = useState<string | undefined>("");
+	const [input, setInput] = useState<string>("");
+  const [output, setOutput] = useState<RunResponse | null>(null);
 	const [theme, setTheme] = useState<'vs-light' | 'vs-dark'>('vs-light');
 
 	// Action states
@@ -130,21 +132,22 @@ export function useEditor({ problemId }: useEditorProps) {
 
 		try {
 
-			const solution: Solution = {
-				problemId: problem.id,
+			const solution: RunSolution = {
 				code: code,
-				language: language
+				language: language,
+        input: input
 			};
 
 			const response = await SubmissionService.runSolution(solution);
-			setSubmissions(prev => [response, ...prev]);
+      console.log("Run response:", response);
+      setOutput(response);
 		} catch (error) {
 			const errMsg = error instanceof Error ? error.message : "Failed to run code";
 			setError(errMsg);
 		} finally {
 			setIsRunning(false);
 		}
-	}, [problem, code, language]);
+	}, [problem, code, input, language]);
 
 	const handleSubmit = useCallback(async () => {
 		if (!problem || !code) return;
@@ -154,7 +157,7 @@ export function useEditor({ problemId }: useEditorProps) {
 		
 		try {
 
-			const solution: Solution = {
+			const solution: SubmitSolution = {
 				problemId: problem.id,
 				code: code,
 				language: language
@@ -224,6 +227,10 @@ export function useEditor({ problemId }: useEditorProps) {
 		setLanguage,
 		code,
 		setCode,
+    input,
+    setInput,
+    output,
+    setOutput,
 		theme,
 		handleToggleTheme,
 

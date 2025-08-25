@@ -5,20 +5,20 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Edit, ImageIcon, Loader2, Plus, Upload, X } from "lucide-react";
-import { usePostContext } from "@/contexts/post-context";
 import dynamic from "next/dynamic";
 
 const TextEditor = dynamic(() => import('@/components/text-editor'), { ssr: false })
 
 export default function PostModal() {
-  const { isOpen, mode, closeModal } = usePostContext();
-
   const {
-    isLoading,
+    isOpen,
+    closeModal,
+    loading: isLoading,
     error,
     formData,
-    handleFormDataChange,
-    handleResetFormData,
+    setFormData,
+    clearFormData,
+    selectedPost,
     handleThumbnailAdd,
     handleThumbnailRemove,
     handleImageAdd,
@@ -27,14 +27,14 @@ export default function PostModal() {
     clearError
   } = usePost();
 
-  const isCreateMode = mode === 'create';
+  const isCreateMode = selectedPost === null;
   const modalTitle = isCreateMode ? 'Create Post' : 'Update Post';
   const submitText = isCreateMode ? 'Create' : 'Update';
   const submitLoadingText = isCreateMode ? 'Creating...' : 'Updating...';
 
   const handleCancel = () => {
     closeModal();
-    handleResetFormData();
+    clearFormData();
     if (error) clearError();
   }
 
@@ -64,7 +64,7 @@ export default function PostModal() {
               type="text"
               placeholder="Enter post title..."
               value={formData.title}
-              onChange={(e) => handleFormDataChange("title", e.target.value)}
+              onChange={(e) => setFormData("title", e.target.value)}
               className="w-full"
               disabled={isLoading}
             />
@@ -118,7 +118,7 @@ export default function PostModal() {
             </Label>
             <TextEditor
               data={formData.content}
-              setData={(value: string) => handleFormDataChange('content', value)}
+              setData={(value: string) => setFormData('content', value)}
             />
           </div>
           {/* Topic section */}
@@ -131,7 +131,7 @@ export default function PostModal() {
               type="text"
               placeholder="Enter Topics, split by comma (Ex: javascript, react, programming)"
               value={formData.topics}
-              onChange={(e) => handleFormDataChange("topics", e.target.value)}
+              onChange={(e) => setFormData("topics", e.target.value)}
               className="w-full"
               disabled={isLoading}
             />

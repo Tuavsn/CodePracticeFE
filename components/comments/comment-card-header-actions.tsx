@@ -4,7 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "../ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useComment } from "@/hooks/use-comment";
-import { useAuthContext } from "@/contexts/auth-context";
+import { useAuthStore } from "@/store/use-auth-store";
 
 interface CommentCardHeaderActionProps {
     comment: PostComment;
@@ -12,7 +12,7 @@ interface CommentCardHeaderActionProps {
 
 export default function CommentCardHeaderActions({ comment }: CommentCardHeaderActionProps) {
 
-    const { user } = useAuthContext();
+    const { user } = useAuthStore();
 
     const { handleDeleteComment, handleFormDataChange } = useComment();
 

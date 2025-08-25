@@ -44,7 +44,7 @@ const initialState: AuthState = {
 	error: null
 }
 
-export const useAuthContext = create<AuthStore>()(
+export const useAuthStore = create<AuthStore>()(
 	persist(
 		(set, get) => ({
 			...initialState,
@@ -208,7 +208,7 @@ export const useAuthContext = create<AuthStore>()(
 )
 
 export const useAuthCallBack = () => {
-	const handleAuthCallback = useAuthContext(state => state.handleAuthCallback);
+	const handleAuthCallback = useAuthStore(state => state.handleAuthCallback);
 	return {
 		handleCallback: async (searchParams: URLSearchParams) => {
 			const code = searchParams.get('code');

@@ -3,14 +3,14 @@
 import { MessageSquare, Plus } from "lucide-react"
 import { Button } from "../ui/button"
 import PostModal from "./post-modal"
-import { usePostContext } from "@/contexts/post-context"
-import { useAuthContext } from "@/contexts/auth-context"
+import { useAuthStore } from "@/store/use-auth-store"
+import { usePost } from "@/hooks/use-post"
 
 export default function PostCreateSection() {
 
-	const { user } = useAuthContext();
+	const { user } = useAuthStore();
 
-	const { openCreateModal } = usePostContext();
+	const { openCreateModal } = usePost();
 
 	return (
 		<>

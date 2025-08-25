@@ -1,59 +1,52 @@
-import { usePostContext } from "@/contexts/post-context";
 import { PostService } from "@/lib/services/post.service";
 import { stringToSlug } from "@/lib/string-utils";
+import { usePostStore } from "@/store/use-post-store";
 import { CreatePostRequest, Post, UpdatePostRequest } from "@/types/post";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { toast } from "sonner";
 
-interface PostFormData {
-  title: string;
-  content: string;
-  thumbnail: string;
-  topics: string;
-  images: { url: string, order: number }[];
-}
-
-const initialFormData: PostFormData = {
-  title: "",
-  content: "",
-  thumbnail: "",
-  topics: "",
-  images: []
-}
-
 export function usePost() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<PostFormData>(initialFormData);
-  const router = useRouter();
-
-  const { mode, editingPost, closeModal } = usePostContext();
+  const {
+    // states
+    formData,
+    posts,
+    selectedPost,
+    reactionedPosts,
+    commentedPosts,
+    loading,
+    error,
+    filters,
+    isOpen,
+    // actions
+    setPosts,
+    setFormData,
+    setLoading,
+    setSelectedPost,
+    setError,
+    setFilters,
+    clearFormData,
+    clearFilters,
+    addPost,
+    updatePost,
+    deletePost,
+    reactToPost,
+    openCreateModal,
+    openEditModal,
+    closeModal,
+    getFilteredPosts,
+  } = usePostStore();
 
   useEffect(() => {
-    if (mode === 'update' && editingPost) {
-      setFormData({
-        title: editingPost.title,
-        content: editingPost.content,
-        thumbnail: editingPost.thumbnail || "",
-        topics: Array.isArray(editingPost.topics)
-          ? editingPost.topics.join(', ')
-          : editingPost.topics || "",
-        images: editingPost.images || []
-      })
-    } else if (mode === 'create') {
-      handleResetFormData();
+    if (selectedPost) {
+      setFormData('title', selectedPost.title);
+      setFormData('content', selectedPost.content);
+      setFormData('thumbnail', selectedPost.thumbnail || "");
+      setFormData('topics', selectedPost.topics || []);
+      setFormData('images', selectedPost.images || []);
+    } else {
+      clearFormData();
     }
-  }, [mode, editingPost])
-
-  const handleFormDataChange = (field: keyof PostFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (error) clearError();
-  }
-
-  const handleResetFormData = () => {
-    setFormData(initialFormData)
-  }
+  }, [selectedPost])
 
   const convertToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -90,7 +83,7 @@ export function usePost() {
       if (file && validateImageFile(file)) {
         try {
           const base64 = await convertToBase64(file);
-          setFormData(prev => ({ ...prev, thumbnail: base64 }));
+          setFormData('thumbnail', base64);
           clearError();
         } catch (error) {
           setError('Failed to process image');
@@ -101,7 +94,7 @@ export function usePost() {
   };
 
   const handleThumbnailRemove = () => {
-    setFormData(prev => ({ ...prev, thumbnail: "" }));
+    setFormData('thumbnail', "");
   };
 
   const handleImageAdd = () => {
@@ -129,10 +122,8 @@ export function usePost() {
           })
         );
 
-        setFormData(prev => ({
-          ...prev,
-          images: [...prev.images, ...newImages]
-        }));
+        setFormData('images', formData.images.concat(newImages).sort((a, b) => a.order - b.order));
+
         clearError();
       } catch (error) {
         setError('Failed to process one or more images');
@@ -142,70 +133,80 @@ export function usePost() {
   };
 
   const handleImageRemove = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index).map((img, i) => ({
-        ...img,
-        order: i + 1
-      }))
-    }));
+    if (index < 0 || index >= formData.images.length) return;
+    setFormData('images', formData.images.filter((_, i) => i !== index).map((img, i) => ({
+      ...img,
+      order: i + 1
+    })));
   };
 
-  const handleCreatePost = async (request: CreatePostRequest) => {
-    setIsLoading(true);
+  const handleFetchPosts = async () => {
+    setLoading(true);
     setError(null);
-
     try {
-      const response = await PostService.createPost(request);
+      const paginatedPosts = await PostService.getPosts({ page: filters.page, size: filters.size, sort: filters.sort, search: filters.search });
+      setPosts(paginatedPosts.content);
+      setError(null);
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : "Failed to fetch posts";
+      setError(errMsg);
+      toast.error(errMsg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleCreatePost = async (request: CreatePostRequest) => {
+    setLoading(true)
+    setError(null);
+    try {
+      const newPost = await PostService.createPost(request);
       toast.success("Post created successfully");
-      handleResetFormData();
-      closeModal();
-      return response;
+      addPost(newPost);
+      clearFormData();
+      setError(null);
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : "Failed to create post";
       setError(errMsg);
       toast.error(errMsg);
-      throw error;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }
 
-  const handleUpdatePost = async (id: string, request: UpdatePostRequest) => {
-    setIsLoading(true);
+  const handleEditPost = async (id: string, request: UpdatePostRequest) => {
+    setLoading(true);
     setError(null);
-
     try {
-      const response = await PostService.updatePost(id, request);
+      await PostService.updatePost(id, request);
       toast.success("Post updated successfully");
-      handleResetFormData();
-      closeModal();
-      return response;
+      updatePost(id, {
+        ...request,
+      });
+      setError(null);
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : "Failed to update post";
       setError(errMsg);
       toast.error(errMsg);
-      throw error;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }
 
-  const handleDeletePost = async (postId: string) => {
-    setIsLoading(true);
+  const handleRemovePost = async (postId: string) => {
+    setLoading(true);
     setError(null);
-
     try {
       await PostService.deletePost(postId);
       toast.success("Post deleted successfully");
-      router.refresh();
+      deletePost(postId);
+      setError(null);
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : "Failed to delete post";
       setError(errMsg);
       toast.error(errMsg);
-      throw error;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }
 
@@ -223,6 +224,21 @@ export function usePost() {
     }
   }
 
+  const handleViewPost = (post: Post) => {
+    if (!post.id && !post.title) return;
+
+    try {
+      const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+      const link = `${baseUrl}/posts/${stringToSlug(post.title)}-${post.id}`;
+      window.open(link, "_blank"); // mở tab mới
+      clearError();
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : "Failed to open post";
+      setError(errMsg);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -237,46 +253,51 @@ export function usePost() {
         content: formData.content.trim(),
         thumbnail: formData.thumbnail.trim(),
         images: formData.images,
-        topics: formData.topics.split(',').map(topic => topic.trim()).filter(topic => topic)
+        topics: formData.topics
       };
 
-      if (mode === 'create') {
+      if (!selectedPost) {
         await handleCreatePost(request as CreatePostRequest);
-      } else if (mode === 'update' && editingPost?.id) {
-        await handleUpdatePost(editingPost.id, request as UpdatePostRequest);
+      } else {
+        await handleEditPost(selectedPost.id, request as UpdatePostRequest);
       }
-      router.refresh();
     } catch (error) {
-      toast.error(mode === 'create' ? 'Create failed' : 'Update failed')
+      toast.error(selectedPost ? 'Create failed' : 'Update failed')
     }
   }
 
-  const handleLikePost = (postId: string) => {
-    // TODO
-    setIsLoading(true);
+  const handleLikePost = async (postId: string) => {
+    setLoading(true);
     setError(null);
-
     try {
-
+      await PostService.reactionPost(postId, 'LIKE');
+      toast.success("Post liked successfully");
+      reactToPost(postId, 'like');
+      setError(null);
     } catch (error) {
-
+      const errMsg = error instanceof Error ? error.message : "Failed to create post";
+      setError(errMsg);
+      toast.error(errMsg);
+    } finally {
+      setLoading(false);
     }
   }
 
-  const handleDislikePost = () => {
-    // TODO
-    setIsLoading(true);
+  const handleDislikePost = async (postId: string) => {
+    setLoading(true);
     setError(null);
-
     try {
-
+      await PostService.reactionPost(postId, 'DISLIKE');
+      toast.success("Post disliked successfully");
+      reactToPost(postId, 'dislike');
+      setError(null);
     } catch (error) {
-
+      const errMsg = error instanceof Error ? error.message : "Failed to create post";
+      setError(errMsg);
+      toast.error(errMsg);
+    } finally {
+      setLoading(false);
     }
-  }
-
-  const handleResetPost = () => {
-    setError(null);
   }
 
   const clearError = () => {
@@ -285,24 +306,35 @@ export function usePost() {
 
   return {
     // states
+    posts,
+    selectedPost,
+    reactionedPosts,
+    commentedPosts,
     formData,
-    isLoading,
+    loading,
     error,
+    filters,
+    isOpen,
     // actions
-    handleFormDataChange,
-    handleResetFormData,
+    setFormData,
+    setSelectedPost,
+    clearFormData,
     handleThumbnailAdd,
     handleThumbnailRemove,
     handleImageAdd,
     handleImageRemove,
+    handleFetchPosts,
     handleCreatePost,
-    handleUpdatePost,
-    handleDeletePost,
-    handleResetPost,
+    handleEditPost,
+    handleRemovePost,
     handleLikePost,
     handleDislikePost,
     handleSubmit,
     handleCopyLink,
-    clearError
+    handleViewPost,
+    clearError,
+    openCreateModal,
+    openEditModal,
+    closeModal
   }
 }
