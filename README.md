@@ -65,7 +65,7 @@ A modern, responsive frontend application for an online coding platform built wi
    Create a `.env.local` file in the root directory:
    ```env
    # API Configuration
-	NEXT_PUBLIC_AUTH_SERVER_URL=your_auth_server_url
+	 NEXT_PUBLIC_AUTH_SERVER_URL=your_auth_server_url
    NEXT_PUBLIC_CLIENT_ID=your_clientid
    NEXT_PUBLIC_REDIRECT_URI=your_redirect_uri
    NEXT_PUBLIC_POST_LOGOUT_REDIRECT_URI=your_logout_redirect_uri
